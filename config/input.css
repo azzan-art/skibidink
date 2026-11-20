@@ -53,13 +53,6 @@
       linear-gradient(to bottom, rgb(15 23 42 / 0.045) 1px, transparent 1px);
     background-size: 40px 40px;
 }
-@utility grid-paper-dark {
-  background-image:
-    linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(ellipse at center, black 40%, transparent 85%);
-}
 @utility eyebrow { @apply text-xs font-bold uppercase tracking-[0.14em] text-skibi; }
 @utility pill { @apply inline-flex items-center rounded-full border border-skibi/25 bg-skibi/10 px-4 py-1.5; }
 @utility btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-7 py-3.5 font-display font-semibold transition; }
@@ -101,6 +94,17 @@
   .feed-item { @apply flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-slate-300; animation: slide-in 0.5s ease-out; }
   .toast { @apply pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 translate-y-4 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-ink opacity-0 shadow-2xl transition duration-300; }
   .toast.show { @apply translate-y-0 opacity-100; }
+  .nav-logo { @apply pointer-events-none -translate-y-1 opacity-0 transition duration-300; }
+  .nav-logo.show { @apply pointer-events-auto translate-y-0 opacity-100; }
+  .court-floor { @apply pointer-events-none absolute inset-0 grid place-items-center; perspective: 1100px; mask-image: radial-gradient(ellipse 70% 65% at 50% 55%, black 20%, transparent 75%); }
+  .bg-court { width: max(560px, 46%); transform: rotateX(62deg) translateY(-6%); opacity: 0.14; stroke: currentColor; }
+  .bg-court-kitchen-surround { fill: currentColor; fill-opacity: 0.18; stroke: none; }
+  .bg-court-kitchen { fill: var(--color-skibi); fill-opacity: 0.35; stroke: none; }
+  .flying-ball { position: absolute; top: 34%; left: 0; width: 100%; opacity: 0.32; animation: fly-x 9s linear infinite; }
+  .flying-ball span { display: block; width: 44px; animation: fly-y 4.5s ease-in-out infinite; }
+  .flying-ball img { width: 100%; height: auto; animation: spin 1.6s linear infinite; filter: blur(0.4px); }
+  .court-floor-dark .flying-ball { opacity: 0.18; }
+  .court-floor-dark .bg-court { opacity: 0.08; }
   .faq summary::-webkit-details-marker { display: none; }
   .faq[open] .chev { @apply rotate-180; }
 }
@@ -109,10 +113,14 @@
 @keyframes rally { from { left: 12%; top: 30%; } 50% { top: 62%; } to { left: 84%; top: 38%; } }
 @keyframes shuffle { from { transform: translateY(-18%); } to { transform: translateY(18%); } }
 @keyframes flash { from { background-color: rgb(251 191 36 / 0.6); } to { background-color: transparent; } }
+@keyframes fly-x { from { transform: translateX(calc(100% + 60px)); } to { transform: translateX(-60px); } }
+@keyframes fly-y { 0%, 100% { transform: translateY(140px); } 50% { transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(-360deg); } }
 @keyframes slide-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { @apply translate-y-0 opacity-100 transition-none; }
-  .court.is-play .player, .court.is-play .ball, .live-dot::after, .feed-item { animation: none; }
+  .court.is-play .player, .court.is-play .ball, .live-dot::after, .feed-item, .flying-ball, .flying-ball span, .flying-ball img { animation: none; }
+  .flying-ball { display: none; }
 }

@@ -1,8 +1,8 @@
 # The homepage
 
 `public/index.html`, composed by `site::home`. The layout follows a clean sports-venue landing
-page: a frosted fixed nav, a grid-paper hero, and alternating light sections with cards. Colours
-come from the SkibiDink logo.
+page: a frosted fixed nav, a hero over a faded court, and alternating light sections with cards.
+Colours come from the SkibiDink logo.
 
 ## Type
 
@@ -27,7 +27,7 @@ All fonts are self-hosted and preloaded; no request goes to Google Fonts.
 
 | id | Content |
 | --- | --- |
-| hero | Eyebrow pill, the logo as the `<h1>` (with an `sr-only` text name), tagline, two buttons |
+| hero | Eyebrow pill, the logo as the `<h1>` (with an `sr-only` text name), tagline, two buttons, over the court floor (§ Court floor) |
 | `the-place` | CSS-drawn court (no photo yet) and the facility copy with two feature cards |
 | `book` | The live booking board (§ Court board), headed "Book", on a dark band |
 | `rules` | Four house-rule cards |
@@ -62,6 +62,22 @@ is labelled a preview.
 When real booking exists, the seeded schedule is replaced by the server's, and the hold becomes a
 request to it.
 
+## Nav logo
+
+The topbar logo (`#nav-logo`) is hidden while the hero's logo (`#hero-logo`) is on screen, and fades
+in once it scrolls under the nav (`site.js`, an IntersectionObserver with the nav's 72 px as top
+margin). Two logos on one screen read as a duplicate.
+
+## Court floor
+
+The hero and the `book` band have no grid; behind them is `.court-floor`: one inline SVG court
+(44 × 20 ft as a 200 × 440 drawing, kitchen tinted green, dashed net across) tilted with
+`rotateX(62deg)` so it reads as the floor seen from the baseline, faded by a radial mask. Its colour
+is `currentColor`: `text-dink` in the hero, `text-ball` (lower opacity) on the dark band.
+
+A faded ball (`.flying-ball`, the cut-out from the logo) crosses it right to left on a 9 s loop,
+arcing twice per crossing and spinning. It is hidden under `prefers-reduced-motion`.
+
 ## Motion
 
 `public/js/site.js` adds `.in` to each `.reveal` element as it scrolls into view (fade and rise,
@@ -69,7 +85,7 @@ request to it.
 
 ## Component classes
 
-`btn`, `btn-primary`, `btn-ghost`, `card`, `icon-box`, `eyebrow`, `pill` and `grid-paper` are
+`btn`, `btn-primary`, `btn-ghost`, `card`, `icon-box`, `eyebrow`, `pill` and `grid-paper` (the map panel) are
 Tailwind v4 `@utility` definitions. They must stay `@utility`, not `@layer components` classes:
 Tailwind v4 refuses `@apply` of a plain class, and `btn-primary` applies `btn`.
 

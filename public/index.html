@@ -1,7 +1,7 @@
 <body>
 <header id="nav" class="fixed inset-x-0 top-0 z-50 border-b border-line/70 bg-white/75 backdrop-blur-xl">
   <div class="mx-auto flex h-18 max-w-6xl items-center justify-between px-5">
-    <a href="/" class="shrink-0" aria-label="SkibiDink home">
+    <a href="/" id="nav-logo" class="nav-logo shrink-0" aria-label="SkibiDink home">
       <img src="/img/logo.png" alt="SkibiDink" width="778" height="135" class="h-7 w-auto sm:h-8">
     </a>
     <nav class="hidden items-center gap-8 text-[15px] font-medium text-slate-600 md:flex">
@@ -18,13 +18,23 @@
 </header>
 
 <main>
-  <section class="grid-paper relative flex min-h-svh items-center justify-center px-5 pt-18 text-center">
+  <section class="relative flex min-h-svh items-center justify-center overflow-hidden px-5 pt-18 text-center">
+    <div class="court-floor text-dink" aria-hidden="true">
+    <svg class="bg-court" viewBox="0 0 220 460" fill="none" aria-hidden="true">
+      <rect x="10" y="10" width="200" height="440" class="bg-court-kitchen-surround"/>
+      <rect x="10" y="160" width="200" height="140" class="bg-court-kitchen"/>
+      <rect x="10" y="10" width="200" height="440" stroke-width="3"/>
+      <path d="M10 160h200M10 300h200M110 10v150M110 300v150" stroke-width="2.5"/>
+      <path d="M0 230h220" stroke-width="4" stroke-dasharray="3 5"/>
+    </svg>
+    <div class="flying-ball"><span><img src="/img/favicon.png" alt="" width="96" height="96"></span></div>
+    </div>
     <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--color-paper)_80%)]"></div>
     <div class="relative max-w-3xl">
       <span class="pill eyebrow">Your neighbourhood pickleball courts</span>
       <h1 class="mt-8">
         <span class="sr-only">SkibiDink pickleball courts</span>
-        <img src="/img/logo.png" alt="" width="778" height="135" class="mx-auto w-full max-w-xl">
+        <img id="hero-logo" src="/img/logo.png" alt="" width="778" height="135" class="mx-auto w-full max-w-xl">
       </h1>
       <p class="mx-auto mt-8 max-w-xl text-xl leading-relaxed text-muted sm:text-2xl">
         One more game is always a good idea.<br class="hidden sm:block"> Come for a rally, stay for the dinks.
@@ -72,7 +82,16 @@
   </section>
 
   <section id="book" class="relative overflow-hidden bg-ink py-24 text-white">
-    <div class="grid-paper-dark pointer-events-none absolute inset-0"></div>
+    <div class="court-floor court-floor-dark text-ball" aria-hidden="true">
+    <svg class="bg-court" viewBox="0 0 220 460" fill="none" aria-hidden="true">
+      <rect x="10" y="10" width="200" height="440" class="bg-court-kitchen-surround"/>
+      <rect x="10" y="160" width="200" height="140" class="bg-court-kitchen"/>
+      <rect x="10" y="10" width="200" height="440" stroke-width="3"/>
+      <path d="M10 160h200M10 300h200M110 10v150M110 300v150" stroke-width="2.5"/>
+      <path d="M0 230h220" stroke-width="4" stroke-dasharray="3 5"/>
+    </svg>
+    <div class="flying-ball"><span><img src="/img/favicon.png" alt="" width="96" height="96"></span></div>
+    </div>
     <div class="relative mx-auto max-w-6xl px-5">
       <div class="reveal flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div class="max-w-2xl">
