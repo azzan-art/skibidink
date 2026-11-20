@@ -2,16 +2,14 @@
   const floor = document.getElementById('floor')
   if (!floor) return
 
-  const COURTS = 4
   const OPEN = 6
   const CLOSE = 22
   const DAYS = 7
   const HOUR = 3600e3
   const HELD_KEY = 'skibidink.held'
-  const POS = [
-    { left: 3, top: 19 }, { left: 51, top: 19 },
-    { left: 3, top: 53 }, { left: 51, top: 53 },
-  ]
+  const POS = [{ left: 14, top: 26, width: 72, height: 47.6 }]
+  const COURTS = POS.length
+  const courtName = c => COURTS === 1 ? 'The court' : `Court ${c + 1}`
   const PLAYERS = [[16, 28], [24, 64], [72, 30], [80, 62]]
 
   const $ = id => document.getElementById(id)
@@ -52,7 +50,6 @@
     else if (hour <= 8) p += 0.3
     else if (hour >= 11 && hour <= 14) p -= 0.08
     if (dow === 0 || dow === 6) p += 0.15
-    if (court === 0) p += 0.06
     return p
   }
 
@@ -88,8 +85,8 @@
       b.className = 'court'
       b.style.left = pos.left + '%'
       b.style.top = pos.top + '%'
-      b.style.width = '46%'
-      b.style.height = '30%'
+      b.style.width = pos.width + '%'
+      b.style.height = pos.height + '%'
       b.dataset.court = i
       b.innerHTML = `
         <div class="court-play">
@@ -103,7 +100,7 @@
           <span class="ball" style="animation-delay:${-i * 0.45}s"></span>
         </div>
         <span class="court-tag"><i></i><span></span></span>
-        <span class="court-name">Court ${i + 1}</span>`
+        <span class="court-name">${courtName(i)}</span>`
       b.addEventListener('click', () => {
         state.court = i
         state.hour = null
@@ -121,17 +118,21 @@
       const busy = openHours && isBooked(t, t.date, c, t.hour)
       if (busy) play++
       b.classList.toggle('is-play', busy)
-      b.classList.toggle('is-picked', c === state.court)
+      b.classList.toggle('is-picked', COURTS > 1 && c === state.court)
       b.querySelector('.court-tag span').textContent = !openHours ? 'Closed' : busy ? `In play · till ${fmtHour(playUntil(t, c))}` : 'Open now'
-      b.setAttribute('aria-label', `Court ${c + 1}, ${!openHours ? 'closed' : busy ? 'in play' : 'open now'}`)
+      b.setAttribute('aria-label', `${courtName(c)}, ${!openHours ? 'closed' : busy ? 'in play' : 'open now'}`)
       b.setAttribute('aria-pressed', c === state.court)
     })
     let left = 0
     for (let c = 0; c < COURTS; c++) {
       for (let h = Math.max(OPEN, t.hour + 1); h < CLOSE; h++) if (!isBooked(t, t.date, c, h)) left++
     }
-    $('stat-play').textContent = play
-    $('stat-open').textContent = openHours ? COURTS - play : 0
+    let next = null
+    for (let h = Math.max(OPEN, t.hour + 1); h < CLOSE && next === null; h++) {
+      for (let c = 0; c < COURTS; c++) if (!isBooked(t, t.date, c, h)) { next = h; break }
+    }
+    $('stat-play').textContent = !openHours ? 'Closed' : play === COURTS ? 'In play' : COURTS === 1 ? 'Open' : `${COURTS - play} open`
+    $('stat-open').textContent = next === null ? '—' : fmtHour(next)
     $('stat-left').textContent = left
     $('clock').textContent = `Manila ${String(t.hour).padStart(2, '0')}:${String(t.minute).padStart(2, '0')}`
   }
@@ -182,7 +183,7 @@
     }
     state.seen.clear()
 
-    $('pick-court').textContent = `Court ${state.court + 1}`
+    $('pick-court').textContent = courtName(state.court)
     const status = $('pick-status')
     const free = [...Array(CLOSE - OPEN)].filter((_, k) => !(state.day === 0 && OPEN + k <= t.hour) && !isBooked(t, date, state.court, OPEN + k)).length
     status.textContent = `${free} open`
@@ -199,7 +200,7 @@
     }
     const key = `${date}|${state.court}|${state.hour}`
     summary.innerHTML = `<span class="block text-xs uppercase tracking-wider text-slate-400">Your pick</span>
-      <span class="mt-1 block font-display text-lg font-bold text-white">Court ${state.court + 1} · ${fmtHour(state.hour)}–${fmtHour(state.hour + 1)}</span>
+      <span class="mt-1 block font-display text-lg font-bold text-white">${fmtHour(state.hour)}–${fmtHour(state.hour + 1)}</span>
       <span class="text-slate-400">${longDate(date)}</span>`
     summary.className = 'rounded-xl border border-ball/40 bg-ball/5 p-4 text-sm'
     hold.disabled = false
@@ -208,7 +209,7 @@
       if (held.has(key)) held.delete(key)
       else held.add(key)
       localStorage.setItem(HELD_KEY, JSON.stringify([...held]))
-      toast(held.has(key) ? `Held Court ${state.court + 1} at ${fmtHour(state.hour)}. Confirmation opens soon.` : 'Hold released.')
+      toast(held.has(key) ? `Held ${fmtHour(state.hour)}, ${longDate(date)}. Confirmation opens soon.` : 'Hold released.')
       render()
     }
   }
@@ -238,12 +239,12 @@
     const top = items[0] && `${items[0].date}|${items[0].c}|${items[0].h}`
     if (lastTop !== null && top !== lastTop && items[0]) {
       state.seen.add(top)
-      toast(`Court ${items[0].c + 1} at ${fmtHour(items[0].h)} just got booked`)
+      toast(`${COURTS === 1 ? '' : courtName(items[0].c) + ' at '}${fmtHour(items[0].h)} just got booked`)
     }
     lastTop = top ?? ''
     $('feed').innerHTML = items.map(b => {
       const when = b.i === 0 ? (b.h >= 17 ? 'tonight' : 'today') : b.i === 1 ? 'tomorrow' : dayName(b.date, b.i)
-      return `<li class="feed-item"><span class="size-1.5 rounded-full bg-amber-400"></span>Court ${b.c + 1} · ${fmtHour(b.h)} ${when}<span class="text-slate-500">· booked ${ago(t.ms - b.at)}</span></li>`
+      return `<li class="feed-item"><span class="size-1.5 rounded-full bg-amber-400"></span>${COURTS === 1 ? '' : courtName(b.c) + ' · '}${fmtHour(b.h)} ${when}<span class="text-slate-500">· booked ${ago(t.ms - b.at)}</span></li>`
     }).join('')
   }
 

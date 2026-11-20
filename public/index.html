@@ -6,14 +6,13 @@
     </a>
     <nav class="hidden items-center gap-8 text-[15px] font-medium text-slate-600 md:flex">
       <a href="#the-place" class="hover:text-ink">The place</a>
-      <a href="#book" class="hover:text-ink">Courts</a>
       <a href="#rules" class="hover:text-ink">House rules</a>
       <a href="#location" class="hover:text-ink">Location</a>
       <a href="#faqs" class="hover:text-ink">FAQs</a>
     </nav>
     <a href="#book" class="btn-primary px-5! py-2.5! text-sm">
       <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-      Book court
+      Book
     </a>
   </div>
 </header>
@@ -32,7 +31,7 @@
       </p>
       <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
         <a href="#book" class="btn-primary">
-          Book your court now
+          Book now
           <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
         </a>
         <a href="#the-place" class="btn-ghost">Explore the place</a>
@@ -80,12 +79,12 @@
           <span class="inline-flex items-center gap-2 rounded-full border border-ball/30 bg-ball/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-ball">
             <span class="live-dot"></span> Live court board
           </span>
-          <h2 class="mt-4 text-4xl font-extrabold text-white sm:text-5xl">Book a <span class="text-ball">court</span></h2>
-          <p class="mt-4 leading-relaxed text-slate-400">Tap a court on the floor plan, pick a day and an open hour. Everyone sees the same board.</p>
+          <h2 class="mt-4 text-4xl font-extrabold text-white sm:text-5xl"><span class="text-ball">Book</span></h2>
+          <p class="mt-4 leading-relaxed text-slate-400">Pick a day and an open hour on the court. Everyone sees the same board.</p>
         </div>
         <dl class="grid grid-cols-3 gap-3 text-center">
-          <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3"><dt class="text-[11px] uppercase tracking-wider text-slate-400">In play</dt><dd id="stat-play" class="font-display text-2xl font-bold">–</dd></div>
-          <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3"><dt class="text-[11px] uppercase tracking-wider text-slate-400">Open now</dt><dd id="stat-open" class="font-display text-2xl font-bold text-ball">–</dd></div>
+          <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3"><dt class="text-[11px] uppercase tracking-wider text-slate-400">Right now</dt><dd id="stat-play" class="font-display text-2xl font-bold">–</dd></div>
+          <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3"><dt class="text-[11px] uppercase tracking-wider text-slate-400">Next open</dt><dd id="stat-open" class="font-display text-2xl font-bold text-ball">–</dd></div>
           <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3"><dt class="text-[11px] uppercase tracking-wider text-slate-400">Slots left today</dt><dd id="stat-left" class="font-display text-2xl font-bold">–</dd></div>
         </dl>
       </div>
@@ -107,13 +106,12 @@
           <div class="mt-4 flex flex-wrap gap-4 text-xs text-slate-400">
             <span class="flex items-center gap-2"><span class="size-3 rounded-sm bg-ball"></span>Open</span>
             <span class="flex items-center gap-2"><span class="size-3 rounded-sm bg-amber-400"></span>In play</span>
-            <span class="flex items-center gap-2"><span class="size-3 rounded-sm bg-white"></span>Selected</span>
           </div>
         </div>
 
         <div class="reveal flex flex-col rounded-3xl border border-white/10 bg-slate-900/80 p-5 sm:p-6">
           <div class="flex items-center justify-between">
-            <h3 id="pick-court" class="text-xl font-bold text-white">Court 1</h3>
+            <h3 id="pick-court" class="text-xl font-bold text-white">The court</h3>
             <span id="pick-status" class="rounded-full px-2.5 py-1 text-xs font-bold"></span>
           </div>
           <div id="days" class="mt-5 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Day"></div>
@@ -236,10 +234,10 @@
   <section id="join" class="px-5 pb-28 pt-8">
     <div class="reveal relative mx-auto max-w-3xl overflow-hidden rounded-3xl border border-line bg-[linear-gradient(135deg,rgb(11_63_174/0.06),rgb(31_157_72/0.06))] px-6 py-16 text-center">
       <h2 class="text-3xl font-extrabold sm:text-4xl">Ready to take your game to the next level?</h2>
-      <p class="mx-auto mt-4 max-w-xl leading-relaxed text-muted">Reserve a court, rent a paddle and meet the SkibiDink community.</p>
+      <p class="mx-auto mt-4 max-w-xl leading-relaxed text-muted">Book a slot, rent a paddle and meet the SkibiDink community.</p>
       <a href="#book" class="btn-primary mt-8">
         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        Reserve your court now
+        Book now
       </a>
     </div>
   </section>
