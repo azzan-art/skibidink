@@ -109,6 +109,8 @@
   .topbar-links a::after { content: ''; @apply absolute inset-x-0 -bottom-1 mx-auto h-0.5 w-0 rounded-full bg-dink transition-all duration-300; }
   .topbar-links a.is-active { @apply font-semibold text-ink; }
   .topbar-links a.is-active::after { @apply w-full; }
+  .topbar-logo { filter: brightness(1) saturate(1); transition: filter 0.6s ease; }
+  .topbar.on-dark .topbar-logo { filter: brightness(1.75) saturate(1.2) drop-shadow(0 0 10px rgb(255 255 255 / 0.12)); }
   .topbar.on-dark .topbar-links a { @apply text-slate-300 hover:text-white; }
   .topbar.on-dark .topbar-links a.is-active { @apply text-white; }
   .topbar.on-dark .topbar-links a::after { @apply bg-ball; }
