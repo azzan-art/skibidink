@@ -94,8 +94,8 @@
   .feed-item { @apply flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-slate-300; animation: slide-in 0.5s ease-out; }
   .toast { @apply pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 translate-y-4 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-ink opacity-0 shadow-2xl transition duration-300; }
   .toast.show { @apply translate-y-0 opacity-100; }
-  .nav-logo { @apply pointer-events-none -translate-y-1 opacity-0 transition duration-300; }
-  .nav-logo.show { @apply pointer-events-auto translate-y-0 opacity-100; }
+  .nav-reveal { @apply pointer-events-none invisible -translate-y-1 opacity-0 transition-all duration-300; }
+  .nav-reveal.show { @apply pointer-events-auto visible translate-y-0 opacity-100; }
   .court-floor { @apply pointer-events-none absolute inset-0 grid place-items-center; perspective: 1100px; mask-image: radial-gradient(ellipse 70% 65% at 50% 55%, black 20%, transparent 75%); }
   .bg-court { width: max(560px, 46%); transform: rotateX(62deg) translateY(-6%); opacity: 0.14; stroke: currentColor; }
   .bg-court-kitchen-surround { fill: currentColor; fill-opacity: 0.18; stroke: none; }
@@ -103,10 +103,10 @@
   .court-floor-dark .bg-court { opacity: 0.08; }
   .logo-play { position: relative; aspect-ratio: 778 / 135; }
   .logo-play > img { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .paddle-left { transform-origin: 29.05% 29.6%; animation: swing-left 6s ease-in-out infinite; }
-  .paddle-right { transform-origin: 51.03% 29.6%; animation: swing-right 6s ease-in-out infinite; }
-  .logo-ball-x { position: absolute; top: 0; height: 100%; width: 7.2%; left: 37.1%; animation: ball-x 3s linear infinite alternate; }
-  .logo-ball { position: absolute; left: 0; width: 100%; height: auto; top: 40.7%; animation: ball-y 1.5s cubic-bezier(0.2, 0.6, 0.4, 1) infinite alternate, ball-spin 1.2s linear infinite; }
+  .paddle-left { transform-origin: 29.05% 29.6%; animation: swing-left 11s ease-in-out infinite; }
+  .paddle-right { transform-origin: 51.03% 29.6%; animation: swing-right 11s ease-in-out infinite; }
+  .logo-ball-x { position: absolute; top: 0; height: 100%; width: 7.2%; left: 37.16%; animation: ball-x 11s linear infinite; }
+  .logo-ball { position: absolute; left: 0; width: 100%; height: auto; top: 40.7%; animation: ball-y 11s infinite, ball-spin 11s linear infinite; }
   .net-footer { @apply relative overflow-hidden bg-[#eef2f6]; }
   .net-footer::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(to right, rgb(15 23 42 / 0.09) 1.5px, transparent 1.5px), linear-gradient(to bottom, rgb(15 23 42 / 0.09) 1.5px, transparent 1.5px); background-size: 22px 22px; background-position: 0 14px; mask-image: linear-gradient(to bottom, black, transparent 85%); }
   .net-footer::after { content: ''; position: absolute; inset-inline: 0; top: 0; height: 16px; background: linear-gradient(to bottom, #ffffff 0%, #ffffff 70%, #eef2f7 100%); border-top: 1px solid rgb(15 23 42 / 0.1); border-bottom: 1px solid rgb(15 23 42 / 0.12); box-shadow: 0 3px 8px -2px rgb(15 23 42 / 0.12); }
@@ -118,11 +118,19 @@
 @keyframes rally { from { left: 12%; top: 30%; } 50% { top: 62%; } to { left: 84%; top: 38%; } }
 @keyframes shuffle { from { transform: translateY(-18%); } to { transform: translateY(18%); } }
 @keyframes flash { from { background-color: rgb(251 191 36 / 0.6); } to { background-color: transparent; } }
-@keyframes ball-x { from { left: 27.2%; } to { left: 41.6%; } }
-@keyframes ball-y { from { top: 38.5%; } to { top: -32%; } }
-@keyframes ball-spin { to { rotate: 360deg; } }
-@keyframes swing-left { 0% { transform: rotate(-22deg); } 14% { transform: rotate(0deg); } 80% { transform: rotate(0deg); } 94% { transform: rotate(14deg); } 100% { transform: rotate(-22deg); } }
-@keyframes swing-right { 0%, 30% { transform: rotate(0deg); } 44% { transform: rotate(-14deg); } 50% { transform: rotate(22deg); } 64%, 100% { transform: rotate(0deg); } }
+@keyframes ball-x { 0%, 27.27% { left: 37.16%; } 36.36% { left: 41.6%; } 63.64% { left: 27.2%; } 86.36%, 100% { left: 37.16%; } }
+@keyframes ball-y {
+  0%, 27.27% { top: 40.7%; animation-timing-function: cubic-bezier(0.25, 0.6, 0.45, 1); }
+  31.82% { top: 8%; animation-timing-function: cubic-bezier(0.55, 0, 0.75, 0.4); }
+  36.36% { top: 38.5%; animation-timing-function: cubic-bezier(0.25, 0.6, 0.45, 1); }
+  50% { top: -32%; animation-timing-function: cubic-bezier(0.55, 0, 0.75, 0.4); }
+  63.64% { top: 38.5%; animation-timing-function: cubic-bezier(0.25, 0.6, 0.45, 1); }
+  73.64% { top: -28%; animation-timing-function: cubic-bezier(0.55, 0, 0.75, 0.4); }
+  86.36%, 100% { top: 40.7%; }
+}
+@keyframes ball-spin { 0%, 27.27% { rotate: 0deg; } 86.36%, 100% { rotate: 720deg; } }
+@keyframes swing-right { 0%, 30% { transform: rotate(0deg); } 33.5% { transform: rotate(-14deg); } 36.36% { transform: rotate(22deg); } 45%, 100% { transform: rotate(0deg); } }
+@keyframes swing-left { 0%, 57% { transform: rotate(0deg); } 60.8% { transform: rotate(14deg); } 63.64% { transform: rotate(-22deg); } 72%, 100% { transform: rotate(0deg); } }
 @keyframes slide-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {

@@ -69,11 +69,20 @@ The hero logo is four stacked layers in `.logo-play`, all on the same 778 × 135
 up with no offsets: `logo-base.png` (the wordmark without paddles or ball, the "i" stems and the
 "b" bowl filled back in), `logo-paddle-left.png`, `logo-paddle-right.png`, and `logo-ball.png`.
 
-The two "i"s rally. On one 6 s cycle the ball crosses left to right in 3 s and back (`ball-x`,
-linear), arcing over the net twice per cycle (`ball-y`, slowing as it rises), and spinning. Each
-paddle (sleeve, grip and head only) swings from its hand when the ball reaches it: left at 0 s,
-right at 3 s. **The swing keyframes, the ball durations and the 6 s cycle are tuned together**;
-changing one alone puts the hits out of step with the ball.
+The two "i"s rally on one 11 s loop, all five animations sharing it:
+
+| Time | Ball | Paddles |
+| --- | --- | --- |
+| 9.5 s → 3 s (wraps) | **At rest in the "b"**, rotation a whole number of turns | Still |
+| 3 → 4 s | Hops out to the right paddle | Right winds up and hits at 4 s |
+| 4 → 7 s | Arcs slowly over the net to the left paddle | Left winds up and hits at 7 s |
+| 7 → 9.5 s | Arcs over the net and drops back into the "b" | Still |
+
+The rest phase is what keeps the logo legible: for 4.5 s of every loop it is exactly the original
+mark. **The ball's rest position (`left: 37.16%`, `top: 40.7%`) is its place in the original logo
+and doubles as the reduced-motion position**; the spin keyframes end on 720° so the ball's holes
+land where they were. The keyframe percentages, the swing contact points (36.36 %, 63.64 %) and the
+11 s duration are tuned together; changing one alone puts the hits out of step with the ball.
 
 `transform-origin` on each paddle is its hand in canvas percent (left 29.05 % 29.6 %, right
 51.03 % 29.6 %), and the ball's `left`/`top` keyframes are canvas percent of the paddle faces and
@@ -82,11 +91,13 @@ the arc's peak above the net. Re-cutting the layers from a new logo means re-mea
 Under `prefers-reduced-motion` nothing moves and the ball rests in the bowl, so the logo reads as
 the original. The nav and footer use the flat `logo.png`.
 
-## Nav logo
+## Topbar on the hero
 
-The topbar logo (`#nav-logo`) is hidden while the hero's logo (`#hero-logo`) is on screen, and fades
-in once it scrolls under the nav (`site.js`, an IntersectionObserver with the nav's 72 px as top
-margin). Two logos on one screen read as a duplicate.
+The topbar logo and its Book button (`.nav-reveal`) are hidden while the hero's logo (`#hero-logo`)
+is on screen, and fade in once it scrolls under the nav (`site.js`, an IntersectionObserver with the
+nav's 72 px as top margin). On the hero, the big logo and the hero's own Book button are the ones
+that count; a second copy in the topbar reads as a duplicate. Hidden means `visibility: hidden`, so
+the hidden button cannot be tabbed to.
 
 ## Court floor
 
