@@ -97,6 +97,14 @@ is `currentColor`: `text-dink` in the hero, `text-ball` (lower opacity) on the d
 A faded ball (`.flying-ball`, the cut-out from the logo) crosses it right to left on a 9 s loop,
 arcing twice per crossing and spinning. It is hidden under `prefers-reduced-motion`.
 
+## Net footer
+
+The footer is drawn as the top of a net: `.net-footer::after` is the white tape along its top edge
+(16 px, hairline edges, a soft shadow so it separates from the white page above), and
+`.net-footer::before` is a 22 px square mesh of faint lines that fades out downward (mask). Both are
+kept faint on purpose so the footer copy stays the thing that is read. The content sits in a
+`relative` container so it paints above the mesh.
+
 ## Motion
 
 `public/js/site.js` adds `.in` to each `.reveal` element as it scrolls into view (fade and rise,

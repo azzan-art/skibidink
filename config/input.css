@@ -111,6 +111,9 @@
   .paddle-right { transform-origin: 51.03% 29.6%; animation: swing-right 6s ease-in-out infinite; }
   .logo-ball-x { position: absolute; top: 0; height: 100%; width: 7.2%; left: 37.1%; animation: ball-x 3s linear infinite alternate; }
   .logo-ball { position: absolute; left: 0; width: 100%; height: auto; top: 40.7%; animation: ball-y 1.5s cubic-bezier(0.2, 0.6, 0.4, 1) infinite alternate, ball-spin 1.2s linear infinite; }
+  .net-footer { @apply relative overflow-hidden bg-[#eef2f6]; }
+  .net-footer::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(to right, rgb(15 23 42 / 0.09) 1.5px, transparent 1.5px), linear-gradient(to bottom, rgb(15 23 42 / 0.09) 1.5px, transparent 1.5px); background-size: 22px 22px; background-position: 0 14px; mask-image: linear-gradient(to bottom, black, transparent 85%); }
+  .net-footer::after { content: ''; position: absolute; inset-inline: 0; top: 0; height: 16px; background: linear-gradient(to bottom, #ffffff 0%, #ffffff 70%, #eef2f7 100%); border-top: 1px solid rgb(15 23 42 / 0.1); border-bottom: 1px solid rgb(15 23 42 / 0.12); box-shadow: 0 3px 8px -2px rgb(15 23 42 / 0.12); }
   .faq summary::-webkit-details-marker { display: none; }
   .faq[open] .chev { @apply rotate-180; }
 }
