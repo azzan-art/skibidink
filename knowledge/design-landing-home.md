@@ -108,8 +108,8 @@ light (`.on-dark`, set by an IntersectionObserver watching the top 8 % of the vi
   that alpha, under the same top-to-bottom mask, so the bar gains a white wash the deeper the page is
   read. Over a `data-dark` band the wash is navy instead, so it never lays a white haze on the dark
   section.
-- **Logo over dark.** Over a `data-dark` band the topbar logo eases (0.6 s) to `brightness(1.75)
-  saturate(1.2)` with a faint glow; the logo's blue is unreadable on navy at its normal values. The
+- **Logo over dark.** Over a `data-dark` band the topbar logo eases (0.6 s) to `brightness(1.35)
+  saturate(1.1)`; the logo's blue is unreadable on navy at its normal values, and much brighter glares. The
   filter sits on the `<img>`, never on the header (§ Topbar, backdrop root).
 - **Scroll-spy.** The link whose section (`#the-place`, `#rules`, `#faqs`) crosses the middle band of
   the viewport gets `.is-active`: bold, with an underline that grows from the centre (blue, lime over
