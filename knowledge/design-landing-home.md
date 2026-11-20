@@ -28,13 +28,13 @@ All fonts are self-hosted and preloaded; no request goes to Google Fonts.
 | id | Content |
 | --- | --- |
 | hero | The playing logo as the `<h1>` (with an `sr-only` text name, § Playing logo), tagline, two buttons, over the court floor (§ Court floor) |
-| `the-place` | The place and its location in one: the map panel (placeholder pin) on the left, the copy and four cards (hours, open play, address, contact) on the right |
+| `the-place` | The place and its location in one: a gallery on the left (two photo frames over a wide map panel) and the copy plus four cards (hours, open play, address, contact) on the right |
 | `book` | The live booking board (§ Court board), headed "Book", on a dark band |
 | `rules` | Four house-rule cards |
 | `faqs` | `<details>` accordion, no script |
 | `join` | Call-to-action banner pointing back to `#book` |
 
-**The address, contact, map pin and real booking are placeholders.** They state nothing about a real address or
+**The photos, address, contact, map and real booking are placeholders.** The two `.photo-slot` frames take an `<img>` (object-cover) when the owner sends photos; `.map-slot` takes a Google Maps embed `<iframe>` once the location is known. They state nothing about a real address or
 phone until the owner supplies them; the structured data stays in step (`arch-server.md`).
 
 ## Court board
@@ -90,6 +90,18 @@ the arc's peak above the net. Re-cutting the layers from a new logo means re-mea
 
 Under `prefers-reduced-motion` nothing moves and the ball rests in the bowl, so the logo reads as
 the original. The nav and footer use the flat `logo.png`.
+
+## Topbar
+
+The bar has no background or border of its own. `.topbar::before` (7 rem tall) carries a
+`backdrop-filter: blur(20px)` masked with a top-to-bottom gradient, so content scrolling under it is
+fully blurred at the top edge and clear at the bottom. **The header element itself must never get
+`backdrop-filter`, `opacity < 1`, `transform` or `filter`**: any of them makes it a backdrop root and
+the blur layer samples nothing.
+
+The bar is a three-column grid (`1fr auto 1fr`), so the links are centred on the page whatever the
+widths of the logo and the button. Over a section marked `data-dark` (the `book` band) the links turn
+light (`.on-dark`, set by an IntersectionObserver watching the top 8 % of the viewport).
 
 ## Topbar on the hero
 
