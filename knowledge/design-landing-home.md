@@ -82,9 +82,13 @@ request to it.
 
 ## Playing logo
 
-The hero logo is four stacked layers in `.logo-play`, all on the same 778 × 135 canvas so they line
+The logo in the hero, the topbar and the footer is the same playing logo: four stacked layers in `.logo-play`, all on the same 778 × 135 canvas so they line
 up with no offsets: `logo-base.png` (the wordmark without paddles or ball, the "i" stems and the
 "b" bowl filled back in), `logo-paddle-left.png`, `logo-paddle-right.png`, and `logo-ball.png`.
+
+Outside the hero a `.logo-play` gets only a height (`h-7`, `sm:h-8` in the topbar); `aspect-ratio` sets the
+width. Never give it a width or a `max-width` as well: with both sides fixed the layers stretch out of
+shape on narrow screens.
 
 The two "i"s rally on one 11 s loop, all five animations sharing it:
 
@@ -116,8 +120,9 @@ fully blurred at the top edge and clear at the bottom. **The header element itse
 `backdrop-filter`, `opacity < 1`, `transform` or `filter`**: any of them makes it a backdrop root and
 the blur layer samples nothing.
 
-The bar is a three-column grid (`1fr auto 1fr`), so the links are centred on the page whatever the
-widths of the logo and the button. The page has no dark band, so the bar keeps one colour scheme everywhere.
+The bar is a three-column grid (`1fr auto 1fr` from `md`), so the links are centred on the page whatever the
+widths of the logo and the button. Below `md` the links are hidden and the grid is
+`auto 1fr auto`, so the logo column is always as wide as the logo; with `1fr` columns a phone squeezes it. The page has no dark band, so the bar keeps one colour scheme everywhere.
 
 - **Depth wash.** `site.js` sets `--tint` on the bar from 0 at the top of the page to 0.72 after
   1.5 viewport heights (once per animation frame on scroll). The blur layer's background is white at
