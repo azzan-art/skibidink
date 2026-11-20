@@ -4,6 +4,13 @@
 page: a frosted fixed nav, a hero over a faded court, and alternating light sections with cards.
 Colours come from the SkibiDink logo.
 
+## Copy
+
+The venue is one pickleball court, so the copy says "the court", never "courts". The tone is plain and
+factual: no superlatives or marketing claims ("tournament-grade", "next level", "friendly community").
+Anything the owner has not confirmed (hours, rentals, surface, lighting, staff) is "coming soon",
+never described. The board's 6 AM–10 PM schedule is part of the simulation, not stated hours.
+
 ## Type
 
 | Role | Font | Files |
@@ -18,29 +25,30 @@ All fonts are self-hosted and preloaded; no request goes to Google Fonts.
 | Token | Value | Use |
 | --- | --- | --- |
 | `dink` | `#0b3fae` | Primary buttons, heading accents (the logo's "Dink" blue) |
-| `skibi` | `#1f9d48` | Eyebrows, pills (the logo's "Skibi" green) |
-| `ball` | `#a3e635` | The ball in the court illustration |
+| `skibi` | `#00a04b` | The logo's "Skibi" green, sampled from `logo.png`: eyebrows, pills, and every green on the booking board (selected day and hour, Hold button, open markers) |
+| `skibi-dark` | `#007a39` | Court surround on the floor plan, Hold button hover |
+| `ball` | `#a4dc4c` | The logo's ball green: only the ball itself. Greens elsewhere are `skibi`, never a generic Tailwind lime or emerald, so the page matches the logo |
 | `ink` / `body` / `muted` | slate 900 / 800 / 500 | Headings / text / secondary text |
 | `paper` / `line` | `#f8fafc` / `#e2e8f0` | Page background / borders |
+| `mist` | `#eef2f7` | The `book` band: a very light blue-gray, never a dark band (the owner finds near-black too heavy) |
 
 ## Sections
 
 | id | Content |
 | --- | --- |
 | hero | The playing logo as the `<h1>` (with an `sr-only` text name, § Playing logo), tagline, two buttons, over the court floor (§ Court floor) |
-| `the-place` | The place and its location in one: a gallery on the left (two photo frames over a wide map panel) and the copy plus four cards (hours, open play, address, contact) on the right |
-| `book` | The live booking board (§ Court board), headed "Book", on a dark band |
+| `the-place` | The place and its location in one: a gallery on the left (two photo frames over a wide map panel) and the copy plus four cards (hours, booking, address, contact) on the right; on phones the copy comes first and the gallery below it |
 | `rules` | Four house-rule cards |
 | `faqs` | `<details>` accordion, no script |
-| `join` | Call-to-action banner pointing back to `#book` |
+| `book` | Last section, just above the footer: every Book button on the page points down to it. The live booking board (§ Court board), headed "Ready to play?" (the last word swaps between "play?" and "book?" every 3 s, sliding up through a clip; `.word-swap`, CSS only, still on reduced motion; screen readers get "play?"), on the light blue-gray `mist` band; its panels are white cards with `line` borders |
 
 **The photos, address, contact, map and real booking are placeholders.** The two `.photo-slot` frames take an `<img>` (object-cover) when the owner sends photos; `.map-slot` takes a Google Maps embed `<iframe>` once the location is known. They state nothing about a real address or
 phone until the owner supplies them; the structured data stays in step (`arch-server.md`).
 
 ## Court board
 
-`public/js/book.js` draws the venue's one court on a floor plan (lounge, paddle rental, restrooms,
-entrance, benches, water station) and runs a **simulated** schedule of hourly slots, 6 AM to 10 PM. Nothing is sent to the server; the board
+`public/js/book.js` draws the venue's one court on a floor plan (court centred above the
+entrance, benches and water station) and runs a **simulated** schedule of hourly slots, 6 AM to 10 PM. Nothing is sent to the server; the board
 is labelled a preview.
 
 - **Every visitor sees the same board.** Whether a slot is booked comes from a hash of
@@ -51,12 +59,20 @@ is labelled a preview.
   in the last 12 hours, the same list for everyone at the same minute.
 - Demand rises at 5–9 PM, 6–8 AM and weekends and dips at midday (`demand()`).
 - The board's clock shows Manila time as `1:50 PM`.
+- Today's hours that have started (the current hour and earlier, Manila time) are not drawn at all, so
+  only hours still bookable appear; a pick that slips into the past is cleared. Once the last hour has
+  started, today shows "No more hours today" instead of an empty grid.
+- The board grid is `grid-cols-1` below `lg`: a grid track defaults to its content's min width, and the
+  sideways-scrolling day strip would otherwise push both panels past the edge of a phone screen.
+- The board never changes size when the day or the pick changes: `#slots` always holds four rows
+  (`min-h-40`, the full 16 hours) and `#summary` always has the height of its three-line "Your pick"
+  state. Without them the panel jumps as today's hours drop off and as a pick is made or cleared.
 - A court booked for the current hour is "in play": players and a ball animate on it. The stats
-  show the court's state right now, the next open hour today and the open slots left today.
+  show the court's state right now, and the next open hour today.
 - "Hold this slot" stores the pick in `localStorage` (`skibidink.held`); only that visitor sees it.
 - `POS` lists the courts. One court is 72 % × 47.6 % of the floor, which keeps the 44 × 20 ft
-  ratio at the floor's 16:11 aspect. With one entry the board says "The court" and hides court
-  names in the feed; adding entries brings back per-court names and the selection outline. The kitchen spans 34.1 %–65.9 % of the court's length (7 ft each side of the net).
+  ratio at the floor's 16:11 aspect. With one entry the board says "The court", draws no name label on the court and hides court
+  names in the feed; adding entries brings back per-court labels, names and the selection outline. The kitchen spans 34.1 %–65.9 % of the court's length (7 ft each side of the net).
 - The published page is the same file for everyone; all of this runs in the browser after load,
   which is why the board works on static hosting (`ops-pages.md`).
 
@@ -100,20 +116,14 @@ fully blurred at the top edge and clear at the bottom. **The header element itse
 the blur layer samples nothing.
 
 The bar is a three-column grid (`1fr auto 1fr`), so the links are centred on the page whatever the
-widths of the logo and the button. Over a section marked `data-dark` (the `book` band) the links turn
-light (`.on-dark`, set by an IntersectionObserver watching the top 8 % of the viewport).
+widths of the logo and the button. The page has no dark band, so the bar keeps one colour scheme everywhere.
 
 - **Depth wash.** `site.js` sets `--tint` on the bar from 0 at the top of the page to 0.72 after
   1.5 viewport heights (once per animation frame on scroll). The blur layer's background is white at
   that alpha, under the same top-to-bottom mask, so the bar gains a white wash the deeper the page is
-  read. Over a `data-dark` band the wash is navy instead, so it never lays a white haze on the dark
-  section.
-- **Logo over dark.** Over a `data-dark` band the topbar logo eases (0.6 s) to `brightness(1.35)
-  saturate(1.1)`; the logo's blue is unreadable on navy at its normal values, and much brighter glares. The
-  filter sits on the `<img>`, never on the header (§ Topbar, backdrop root).
+  read.
 - **Scroll-spy.** The link whose section (`#the-place`, `#rules`, `#faqs`) crosses the middle band of
-  the viewport gets `.is-active`: bold, with an underline that grows from the centre (blue, lime over
-  the dark band). On the hero and the sections with no link (`#book`, `#join`) no link is active.
+  the viewport gets `.is-active`: bold, with an underline that grows from the centre (blue). On the hero and the section with no link (`#book`) no link is active.
 
 ## Topbar on the hero
 
@@ -128,7 +138,7 @@ the hidden button cannot be tabbed to.
 The hero and the `book` band have no grid; behind them is `.court-floor`: one inline SVG court
 (44 × 20 ft as a 200 × 440 drawing, kitchen tinted green, dashed net across) tilted with
 `rotateX(62deg)` so it reads as the floor seen from the baseline, faded by a radial mask. Its colour
-is `currentColor`: `text-dink` in the hero, `text-ball` (lower opacity) on the dark band.
+is `currentColor`: `text-dink` in the hero, `text-dink` at lower opacity on the `book` band.
 
 
 ## Net footer

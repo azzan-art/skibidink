@@ -7,7 +7,7 @@
   const DAYS = 7
   const HOUR = 3600e3
   const HELD_KEY = 'skibidink.held'
-  const POS = [{ left: 14, top: 26, width: 72, height: 47.6 }]
+  const POS = [{ left: 14, top: 20, width: 72, height: 47.6 }]
   const COURTS = POS.length
   const courtName = c => COURTS === 1 ? 'The court' : `Court ${c + 1}`
   const PLAYERS = [[16, 28], [24, 64], [72, 30], [80, 62]]
@@ -100,7 +100,7 @@
           <span class="ball" style="animation-delay:${-i * 0.45}s"></span>
         </div>
         <span class="court-tag"><i></i><span></span></span>
-        <span class="court-name">${courtName(i)}</span>`
+        ${COURTS > 1 ? `<span class="court-name">${courtName(i)}</span>` : ""}`
       b.addEventListener('click', () => {
         state.court = i
         state.hour = null
@@ -123,17 +123,12 @@
       b.setAttribute('aria-label', `${courtName(c)}, ${!openHours ? 'closed' : busy ? 'in play' : 'open now'}`)
       b.setAttribute('aria-pressed', c === state.court)
     })
-    let left = 0
-    for (let c = 0; c < COURTS; c++) {
-      for (let h = Math.max(OPEN, t.hour + 1); h < CLOSE; h++) if (!isBooked(t, t.date, c, h)) left++
-    }
     let next = null
     for (let h = Math.max(OPEN, t.hour + 1); h < CLOSE && next === null; h++) {
       for (let c = 0; c < COURTS; c++) if (!isBooked(t, t.date, c, h)) { next = h; break }
     }
     $('stat-play').textContent = !openHours ? 'Closed' : play === COURTS ? 'In play' : COURTS === 1 ? 'Open' : `${COURTS - play} open`
     $('stat-open').textContent = next === null ? '—' : fmtHour(next)
-    $('stat-left').textContent = left
     $('clock').textContent = `${t.hour % 12 || 12}:${String(t.minute).padStart(2, '0')} ${t.hour < 12 ? 'AM' : 'PM'}`
   }
 
@@ -161,48 +156,50 @@
     const date = addDays(t.date, state.day)
     const box = $('slots')
     box.innerHTML = ''
+    if (state.day === 0 && state.hour !== null && state.hour <= t.hour) state.hour = null
     for (let h = OPEN; h < CLOSE; h++) {
+      if (state.day === 0 && h <= t.hour) continue
       const b = document.createElement('button')
       b.type = 'button'
       b.className = 'slot'
       b.textContent = fmtHour(h)
       const key = `${date}|${state.court}|${h}`
-      const past = state.day === 0 && h <= t.hour
       const booked = isBooked(t, date, state.court, h)
       if (booked) b.classList.add('is-booked')
       if (state.seen.has(key)) b.classList.add('just-booked')
       if (held.has(key) && !booked) b.classList.add('is-held')
-      b.disabled = past || booked
+      b.disabled = booked
       b.setAttribute('aria-pressed', state.hour === h)
-      b.title = past ? 'Past' : booked ? 'Booked' : held.has(key) ? 'Held by you' : 'Open'
+      b.title = booked ? 'Booked' : held.has(key) ? 'Held by you' : 'Open'
       b.addEventListener('click', () => {
         state.hour = h
         render()
       })
       box.appendChild(b)
     }
+    if (!box.children.length) box.innerHTML = `<p class="col-span-4 grid min-h-40 place-items-center rounded-lg bg-slate-100 text-center text-sm text-muted">No more hours today. Pick another day.</p>`
     state.seen.clear()
 
     $('pick-court').textContent = courtName(state.court)
     const status = $('pick-status')
     const free = [...Array(CLOSE - OPEN)].filter((_, k) => !(state.day === 0 && OPEN + k <= t.hour) && !isBooked(t, date, state.court, OPEN + k)).length
     status.textContent = `${free} open`
-    status.className = `rounded-full px-2.5 py-1 text-xs font-bold ${free ? 'bg-ball/15 text-ball' : 'bg-white/10 text-slate-400'}`
+    status.className = `rounded-full px-2.5 py-1 text-xs font-bold ${free ? 'bg-skibi/10 text-skibi' : 'bg-slate-100 text-muted'}`
 
     const summary = $('summary')
     const hold = $('hold')
     if (state.hour === null) {
       summary.textContent = 'Pick an open hour to hold it.'
-      summary.className = 'rounded-xl border border-dashed border-white/15 p-4 text-sm text-slate-400'
+      summary.className = 'rounded-xl border border-dashed border-slate-300 p-4 text-sm text-muted'
       hold.disabled = true
       hold.textContent = 'Hold this slot'
       return
     }
     const key = `${date}|${state.court}|${state.hour}`
-    summary.innerHTML = `<span class="block text-xs uppercase tracking-wider text-slate-400">Your pick</span>
-      <span class="mt-1 block font-display text-lg font-bold text-white">${fmtHour(state.hour)}–${fmtHour(state.hour + 1)}</span>
-      <span class="text-slate-400">${longDate(date)}</span>`
-    summary.className = 'rounded-xl border border-ball/40 bg-ball/5 p-4 text-sm'
+    summary.innerHTML = `<span class="block text-xs uppercase tracking-wider text-muted">Your pick</span>
+      <span class="mt-1 block font-display text-lg font-bold text-ink">${fmtHour(state.hour)}–${fmtHour(state.hour + 1)}</span>
+      <span class="text-muted">${longDate(date)}</span>`
+    summary.className = 'rounded-xl border border-skibi/40 bg-skibi/5 p-4 text-sm'
     hold.disabled = false
     hold.textContent = held.has(key) ? 'Release this hold' : 'Hold this slot'
     hold.onclick = () => {

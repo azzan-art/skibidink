@@ -34,8 +34,8 @@ async fn send_page(app: &App, file: &str, meta: Meta) -> Res {
 
 async fn home(State(app): State<Arc<App>>) -> Res {
     let meta = Meta::new("/")
-        .title("SkibiDink | Pickleball Courts")
-        .description("Book a pickleball court at SkibiDink. Pro-grade surfaces, rental paddles and a friendly local community.");
+        .title("SkibiDink | Pickleball Court")
+        .description("SkibiDink is a single pickleball court you can book by the hour.");
     send_page(&app, "index.html", meta).await
 }
 

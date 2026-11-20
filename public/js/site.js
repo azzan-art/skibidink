@@ -21,16 +21,6 @@ if (heroLogo) {
 }
 
 const topbar = document.getElementById('nav')
-const darkBands = document.querySelectorAll('[data-dark]')
-if (topbar && darkBands.length) {
-  const under = new Set()
-  const watch = new IntersectionObserver(entries => {
-    for (const e of entries) e.isIntersecting ? under.add(e.target) : under.delete(e.target)
-    topbar.classList.toggle('on-dark', under.size > 0)
-  }, { rootMargin: '0px 0px -92% 0px' })
-  darkBands.forEach(el => watch.observe(el))
-}
-
 if (topbar) {
   let queued = false
   const tint = () => {
