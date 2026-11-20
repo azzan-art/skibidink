@@ -6,7 +6,8 @@ Colours come from the SkibiDink logo.
 
 ## Copy
 
-The venue is one pickleball court, so the copy says "the court", never "courts". The tone is plain and
+The copy never states how many courts there are: no "one court", "a single court" or "courts". It
+says "pickleball", "a place to play" or "the court" in passing. The tone is plain and
 factual: no superlatives or marketing claims ("tournament-grade", "next level", "friendly community").
 Anything the owner has not confirmed (hours, rentals, surface, lighting, staff) is "coming soon",
 never described. The board's 6 AM–10 PM schedule is part of the simulation, not stated hours.
