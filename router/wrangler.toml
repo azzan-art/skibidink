@@ -1,0 +1,24 @@
+# See knowledge/ops-edge.md. Deploy with deploy.sh, never a bare `wrangler deploy`.
+name = "skibidink"
+main = "src/index.js"
+compatibility_date = "2025-08-01"
+workers_dev = true
+
+# routes = [{ pattern = "skibidink.com/*", zone_name = "skibidink.com" }]
+
+[observability]
+enabled = true
+
+[vars]
+ORIGIN = ""
+
+# Built by deploy.sh; deployed any other way ASSETS_VERSION goes missing and every versioned asset
+# falls through to the origin.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = true
+html_handling = "none"
+not_found_handling = "none"
+
+# Secret, set once: npx wrangler secret put EDGE_SECRET  (the same value as the origin's EDGE_SECRET)

@@ -1,0 +1,35 @@
+# Git keeps everything this project is made of: source, pages, tests, knowledge/, the Claude
+# config and the rules. Only four kinds of thing stay out — see knowledge/ops-deploy-files.md.
+#
+# What the CONTAINER holds is a different question, answered by render/Dockerfile and .dockerignore.
+
+# ── 1. SECRETS. Never remove a line from this block. ─────────────────────────
+# A committed .env is a live database, a Cloudflare account and the admin gate handed to anyone
+# who clones the repo, and rewriting history does not un-leak it.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# ── 2. Dependencies ──────────────────────────────────────────────────────────
+node_modules/
+.bin/
+
+# ── 3. Generated, rebuilt on demand ──────────────────────────────────────────
+public/styles/output.css
+server-rs/target/
+router/dist/
+.wrangler/
+
+# ── 4. Machine noise and local dumps ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+npm-debug.log*
+*_backup_*.json

@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: skibidink
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./render/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/ready
+    autoDeploy: true
+    buildFilter:
+      ignoredPaths:
+        - knowledge/**
+        - router/**
+        - "*.md"
+        - .claude/**
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: EDGE_SECRET
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: MALLOC_ARENA_MAX
+        value: "2"

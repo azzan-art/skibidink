@@ -1,0 +1,24 @@
+#!/bin/sh
+# Installed as .git/hooks/pre-push. See knowledge/ops-edge.md § Deploying.
+
+repo=$(git rev-parse --show-toplevel)
+
+note() {
+  curl -sf -m 2 --data-urlencode "title=$1" --data-urlencode "body=$2" http://127.0.0.1:47117/notify >/dev/null 2>&1 ||
+    osascript -e 'on run a' -e 'display notification (item 2 of a) with title (item 1 of a)' -e 'end run' "$1" "$2" >/dev/null 2>&1
+}
+log="$(git rev-parse --absolute-git-dir)/router-deploy.log"
+
+while read -r _ local_sha remote_ref _; do
+  [ "$remote_ref" = refs/heads/main ] || continue
+  case "$local_sha" in 0000000*) continue ;; esac
+  (
+    echo "== $(date '+%F %T') $local_sha" >>"$log"
+    if "$repo/router/deploy.sh" "$local_sha" local >>"$log" 2>&1; then
+      note "Router deployed" "Cloudflare serves the new pages"
+    else
+      note "Router deploy failed" "See $log"
+    fi
+  ) </dev/null >/dev/null 2>&1 &
+done
+exit 0

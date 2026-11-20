@@ -1,0 +1,12 @@
+{
+  "name": "skibidink",
+  "private": true,
+  "scripts": {
+    "build": "bin/css --minify",
+    "server": "PATH=$HOME/.cargo/bin:$PATH cargo build --release --manifest-path server-rs/Cargo.toml",
+    "start": "NODE_ENV=production server-rs/target/release/skibidink",
+    "dev": "bin/dev",
+    "test": "PATH=$HOME/.cargo/bin:$PATH cargo test --manifest-path server-rs/Cargo.toml",
+    "deploy:edge": "router/deploy.sh"
+  }
+}

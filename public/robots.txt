@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://skibidink.com/sitemap.xml

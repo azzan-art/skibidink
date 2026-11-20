@@ -1,0 +1,23 @@
+#!/bin/sh
+# Builds public/styles/output.css with Tailwind's standalone binary. Extra args pass through (--watch, --minify).
+set -eu
+VERSION=4.3.1
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+case "$(uname -s)-$(uname -m)" in
+  Linux-x86_64) PLAT=linux-x64; SUM=2526d063ba03b71f9a3ea7d5cee14f0aec147f117f222d5adc97b1d736d45999 ;;
+  Linux-aarch64|Linux-arm64) PLAT=linux-arm64; SUM=3d662377a86d71c43b549dc06b90db4586b4acd412bf827a3268e951661e5adf ;;
+  Darwin-x86_64) PLAT=macos-x64; SUM=e9e830ceb3e70b7e0775a3dd79eee8ec82c6b31270f08f2fa2857d0077045ac3 ;;
+  Darwin-arm64) PLAT=macos-arm64; SUM=a27c43626185953ee19bdace1939c7601e55da654e0b2fc4461e3e29957aa739 ;;
+  *) echo "bin/css: no Tailwind binary for $(uname -s)-$(uname -m)" >&2; exit 1 ;;
+esac
+BIN="$ROOT/.bin/tailwindcss-$VERSION-$PLAT"
+if [ ! -x "$BIN" ]; then
+  mkdir -p "$ROOT/.bin"
+  curl -fsSL -o "$BIN.part" "https://github.com/tailwindlabs/tailwindcss/releases/download/v$VERSION/tailwindcss-$PLAT"
+  # SECURITY: the binary runs on every build; a download that does not match the pinned sum is discarded.
+  GOT=$( (sha256sum "$BIN.part" 2>/dev/null || shasum -a 256 "$BIN.part") | cut -d' ' -f1)
+  if [ "$GOT" != "$SUM" ]; then rm -f "$BIN.part"; echo "bin/css: checksum mismatch for tailwindcss-$PLAT" >&2; exit 1; fi
+  chmod +x "$BIN.part" && mv "$BIN.part" "$BIN"
+fi
+cd "$ROOT"
+exec "$BIN" -i ./config/input.css -o ./public/styles/output.css "$@"

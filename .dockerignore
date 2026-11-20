@@ -1,0 +1,12 @@
+# SECURITY: `COPY . .` in render/Dockerfile bakes everything not listed here into the image.
+.env
+.env.*
+*.pem
+*.key
+node_modules/
+.bin/
+server-rs/target/
+.git/
+.claude/
+knowledge/
+router/

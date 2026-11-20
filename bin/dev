@@ -1,0 +1,9 @@
+#!/bin/sh
+# Tailwind in watch mode and the Rust server together; Ctrl-C stops both.
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+export PATH="$HOME/.cargo/bin:$PATH"
+"$ROOT/bin/css" --watch=always &
+CSS=$!
+trap 'kill $CSS 2>/dev/null' EXIT INT TERM
+cargo run --manifest-path "$ROOT/server-rs/Cargo.toml" "$@"
