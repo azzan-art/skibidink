@@ -22,3 +22,9 @@ live yet" until it does.
 
 Location, contact and booking are placeholders. Never invent an address, phone number, price or
 opening hours; the owner supplies them.
+
+## Keep the local server running
+
+The user keeps `http://localhost:3917` open. Never stop the local server at the end of a task. After
+a change, restart it on port 3917 (rebuild CSS, and `cargo build --release` if Rust changed) so the
+page they have open shows the new version, and leave it running.
