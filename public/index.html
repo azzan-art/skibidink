@@ -31,10 +31,14 @@
     </div>
     <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--color-paper)_80%)]"></div>
     <div class="relative max-w-3xl">
-      <span class="pill eyebrow">Your neighbourhood pickleball courts</span>
-      <h1 class="mt-8">
+      <h1>
         <span class="sr-only">SkibiDink pickleball courts</span>
-        <img id="hero-logo" src="/img/logo.png" alt="" width="778" height="135" class="mx-auto w-full max-w-xl">
+        <span id="hero-logo" class="logo-play mx-auto block w-full max-w-xl" aria-hidden="true">
+          <img src="/img/logo-base.png" alt="" width="778" height="135">
+          <img src="/img/logo-paddle-left.png" alt="" width="778" height="135" class="paddle-left">
+          <img src="/img/logo-paddle-right.png" alt="" width="778" height="135" class="paddle-right">
+          <span class="logo-ball-x"><img src="/img/logo-ball.png" alt="" width="56" height="56" class="logo-ball"></span>
+        </span>
       </h1>
       <p class="mx-auto mt-8 max-w-xl text-xl leading-relaxed text-muted sm:text-2xl">
         One more game is always a good idea.<br class="hidden sm:block"> Come for a rally, stay for the dinks.
