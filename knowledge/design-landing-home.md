@@ -28,14 +28,13 @@ All fonts are self-hosted and preloaded; no request goes to Google Fonts.
 | id | Content |
 | --- | --- |
 | hero | The playing logo as the `<h1>` (with an `sr-only` text name, § Playing logo), tagline, two buttons, over the court floor (§ Court floor) |
-| `the-place` | CSS-drawn court (no photo yet) and the facility copy with two feature cards |
+| `the-place` | The place and its location in one: the map panel (placeholder pin) on the left, the copy and four cards (hours, open play, address, contact) on the right |
 | `book` | The live booking board (§ Court board), headed "Book", on a dark band |
 | `rules` | Four house-rule cards |
-| `location` | Contact list and a browser-frame map panel; both say "coming soon" |
 | `faqs` | `<details>` accordion, no script |
 | `join` | Call-to-action banner pointing back to `#book` |
 
-**Location, contact and real booking are placeholders.** They state nothing about a real address or
+**The address, contact, map pin and real booking are placeholders.** They state nothing about a real address or
 phone until the owner supplies them; the structured data stays in step (`arch-server.md`).
 
 ## Court board
