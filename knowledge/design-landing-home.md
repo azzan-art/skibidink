@@ -29,13 +29,36 @@ All fonts are self-hosted and preloaded; no request goes to Google Fonts.
 | --- | --- |
 | hero | Eyebrow pill, the logo as the `<h1>` (with an `sr-only` text name), tagline, two buttons |
 | `the-place` | CSS-drawn court (no photo yet) and the facility copy with two feature cards |
+| `book` | The live court board (§ Court board), on a dark band |
 | `rules` | Four house-rule cards |
 | `location` | Contact list and a browser-frame map panel; both say "coming soon" |
 | `faqs` | `<details>` accordion, no script |
-| `book` | Call-to-action banner; every booking button points here until booking exists |
+| `join` | Call-to-action banner pointing back to `#book` |
 
-**Location, contact and booking are placeholders.** They state nothing about a real address or
+**Location, contact and real booking are placeholders.** They state nothing about a real address or
 phone until the owner supplies them; the structured data stays in step (`arch-server.md`).
+
+## Court board
+
+`public/js/book.js` draws four courts on a floor plan (lounge, paddle rental, restrooms, entrance,
+benches, water station) and runs a **simulated** schedule. Nothing is sent to the server; the board
+is labelled a preview.
+
+- **Every visitor sees the same board.** Whether a slot is booked comes from a hash of
+  `date|court|hour`, never `Math.random`, and the page reads Manila time (`Asia/Manila`), not the
+  visitor's clock zone. A random source would show each visitor a different venue.
+- Each booked slot also has a seeded "booked at" moment up to 48 hours before it starts. A slot
+  shows open until then, so the board fills as the day goes on and the feed lists the bookings made
+  in the last 12 hours, the same list for everyone at the same minute.
+- Demand rises at 5–9 PM, 6–8 AM and weekends and dips at midday (`demand()`).
+- A court booked for the current hour is "in play": players and a ball animate on it.
+- "Hold this slot" stores the pick in `localStorage` (`skibidink.held`); only that visitor sees it.
+- Courts are 46 % × 30 % of the floor, which keeps the 44 × 20 ft court ratio at the floor's
+  16:11 aspect. The kitchen spans 34.1 %–65.9 % of the court's length (7 ft each side of the net).
+- The page snapshot is the same for everyone because all of this runs in the browser after load.
+
+When real booking exists, the seeded schedule is replaced by the server's, and the hold becomes a
+request to it.
 
 ## Motion
 

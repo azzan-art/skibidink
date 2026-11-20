@@ -173,6 +173,7 @@ impl Pages {
 <link rel="preload" href="/vendor/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/styles/output.css">
 <script defer src="/js/site.js"></script>
+<script defer src="/js/book.js"></script>
 </head>
 "##
         )
