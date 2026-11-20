@@ -24,6 +24,7 @@ node_modules/
 public/styles/output.css
 server-rs/target/
 router/dist/
+dist/
 .wrangler/
 
 # ── 4. Machine noise and local dumps ─────────────────────────────────────────

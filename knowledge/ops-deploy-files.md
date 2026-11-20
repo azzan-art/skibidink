@@ -10,7 +10,7 @@
 
 Git tracks source, pages, `knowledge/` and `CLAUDE.md`. Out: secrets (`.env*` except
 `.env.example`, keys), dependencies (`node_modules/`, `.bin/`), generated output
-(`public/styles/output.css`, `server-rs/target/`, `router/dist/`, `.wrangler/`) and machine noise.
+(`public/styles/output.css`, `server-rs/target/`, `dist/`, `router/dist/`, `.wrangler/`) and machine noise.
 **Never remove a line from the secrets block**: a committed `.env` stays leaked after deletion.
 
 ## The container

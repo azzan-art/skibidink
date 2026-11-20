@@ -134,7 +134,7 @@
     $('stat-play').textContent = !openHours ? 'Closed' : play === COURTS ? 'In play' : COURTS === 1 ? 'Open' : `${COURTS - play} open`
     $('stat-open').textContent = next === null ? '—' : fmtHour(next)
     $('stat-left').textContent = left
-    $('clock').textContent = `Manila ${String(t.hour).padStart(2, '0')}:${String(t.minute).padStart(2, '0')}`
+    $('clock').textContent = `${t.hour % 12 || 12}:${String(t.minute).padStart(2, '0')} ${t.hour < 12 ? 'AM' : 'PM'}`
   }
 
   function renderDays(t) {

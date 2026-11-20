@@ -1,5 +1,9 @@
 # The Cloudflare router Worker
 
+**Not deployed.** The site is published on GitHub Pages (`ops-pages.md`); nothing pushes to
+Cloudflare and no git hook is installed. This file describes `router/` for when the site moves
+behind Cloudflare again.
+
 `router/` is a Cloudflare Worker with static assets (Cloudflare's successor to Pages). It answers
 every static file in `public/` and a rendered snapshot of every page in the sitemap itself, so
 visitors to those never reach the Rust origin. Everything else (APIs, future booking and account
@@ -70,9 +74,9 @@ Worker is deployed, not when Render is.
    `EDGE_SECRET` in the environment;
 4. runs `wrangler deploy --var ASSETS_VERSION:<commit>` with the account from `wrangler login`.
 
-A lock (`.git/router-deploy.lock`) runs one deploy at a time. `router/pre-push`, installed as
+A lock (`.git/router-deploy.lock`) runs one deploy at a time. `router/pre-push`, when linked as
 `.git/hooks/pre-push`, starts the script in the background for every push to `main`, logs to
-`.git/router-deploy.log` and posts a macOS notification.
+`.git/router-deploy.log` and posts a macOS notification. It is not linked while Pages is the host.
 
 **A bare `wrangler deploy` drops `ASSETS_VERSION` and the `/_v/` tree**; every versioned asset then
 falls through to the origin.

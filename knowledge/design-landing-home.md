@@ -51,13 +51,15 @@ is labelled a preview.
   shows open until then, so the board fills as the day goes on and the feed lists the bookings made
   in the last 12 hours, the same list for everyone at the same minute.
 - Demand rises at 5–9 PM, 6–8 AM and weekends and dips at midday (`demand()`).
+- The board's clock shows Manila time as `1:50 PM`.
 - A court booked for the current hour is "in play": players and a ball animate on it. The stats
   show the court's state right now, the next open hour today and the open slots left today.
 - "Hold this slot" stores the pick in `localStorage` (`skibidink.held`); only that visitor sees it.
 - `POS` lists the courts. One court is 72 % × 47.6 % of the floor, which keeps the 44 × 20 ft
   ratio at the floor's 16:11 aspect. With one entry the board says "The court" and hides court
   names in the feed; adding entries brings back per-court names and the selection outline. The kitchen spans 34.1 %–65.9 % of the court's length (7 ft each side of the net).
-- The page snapshot is the same for everyone because all of this runs in the browser after load.
+- The published page is the same file for everyone; all of this runs in the browser after load,
+  which is why the board works on static hosting (`ops-pages.md`).
 
 When real booking exists, the seeded schedule is replaced by the server's, and the hold becomes a
 request to it.
@@ -94,8 +96,6 @@ The hero and the `book` band have no grid; behind them is `.court-floor`: one in
 `rotateX(62deg)` so it reads as the floor seen from the baseline, faded by a radial mask. Its colour
 is `currentColor`: `text-dink` in the hero, `text-ball` (lower opacity) on the dark band.
 
-A faded ball (`.flying-ball`, the cut-out from the logo) crosses it right to left on a 9 s loop,
-arcing twice per crossing and spinning. It is hidden under `prefers-reduced-motion`.
 
 ## Net footer
 

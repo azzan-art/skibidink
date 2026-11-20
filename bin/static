@@ -1,0 +1,52 @@
+#!/bin/sh
+# Renders the site to plain files in dist/ for GitHub Pages. See knowledge/ops-pages.md.
+# BASE_PATH: the path the site is served under (e.g. /skibidink), empty at a domain root.
+# SITE_URL: the public origin plus BASE_PATH, used for canonicals, robots.txt and the sitemap.
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+OUT=${OUT:-$ROOT/dist}
+BASE=${BASE_PATH:-}
+BASE=${BASE%/}
+SITE=${SITE_URL:-}
+SITE=${SITE%/}
+PORT=${STATIC_PORT:-3919}
+export PATH="$HOME/.cargo/bin:$PATH"
+
+"$ROOT/bin/css" --minify
+cargo build --release --locked -q --manifest-path "$ROOT/server-rs/Cargo.toml"
+
+log=$(mktemp)
+# DANGER: env -i keeps the export off any real database; a DATABASE_URL from the shell would run the
+# boot schema against it.
+env -i PATH="$PATH" HOME="$HOME" PORT="$PORT" SKIBIDINK_ROOT="$ROOT" SITE_URL="$SITE" \
+  RENDER_GIT_COMMIT="${GITHUB_SHA:-$(git -C "$ROOT" rev-parse HEAD)}" DATABASE_URL= \
+  "$ROOT/server-rs/target/release/skibidink" >"$log" 2>&1 &
+pid=$!
+trap 'kill $pid 2>/dev/null; rm -f "$log"' EXIT INT TERM
+i=0
+until curl -sf "http://127.0.0.1:$PORT/api/ready" >/dev/null 2>&1; do
+  i=$((i + 1)); [ $i -gt 60 ] && { cat "$log"; exit 1; }
+  sleep 1
+done
+
+rm -rf "$OUT"
+mkdir -p "$OUT"
+rsync -a --exclude='*.html' --exclude='.*' "$ROOT/public/" "$OUT/"
+
+for path in $(grep -o '<loc>[^<]*' "$ROOT/public/sitemap.xml" | sed 's|<loc>https\{0,1\}://[^/]*||'); do
+  clean=$(printf '%s' "$path" | sed 's|/*$||')
+  file="$OUT${clean}/index.html"
+  mkdir -p "$(dirname "$file")"
+  curl -sf "http://127.0.0.1:$PORT$path" -o "$file"
+  echo "page $path"
+done
+
+if [ -n "$BASE" ]; then
+  find "$OUT" -name '*.html' -exec perl -pi -e 's{((?:href|src)=")/(?!/)}{$1'"$BASE"'/}g' {} +
+  find "$OUT" -name '*.css' -exec perl -pi -e 's{url\(([\x27"]?)/(?!/)}{url($1'"$BASE"'/}g' {} +
+fi
+if [ -n "$SITE" ]; then
+  perl -pi -e 's{https://skibidink\.com}{'"$SITE"'}g' "$OUT/robots.txt" "$OUT/sitemap.xml"
+fi
+touch "$OUT/.nojekyll"
+echo "built $OUT"

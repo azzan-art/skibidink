@@ -100,10 +100,6 @@
   .bg-court { width: max(560px, 46%); transform: rotateX(62deg) translateY(-6%); opacity: 0.14; stroke: currentColor; }
   .bg-court-kitchen-surround { fill: currentColor; fill-opacity: 0.18; stroke: none; }
   .bg-court-kitchen { fill: var(--color-skibi); fill-opacity: 0.35; stroke: none; }
-  .flying-ball { position: absolute; top: 34%; left: 0; width: 100%; opacity: 0.32; animation: fly-x 9s linear infinite; }
-  .flying-ball span { display: block; width: 44px; animation: fly-y 4.5s ease-in-out infinite; }
-  .flying-ball img { width: 100%; height: auto; animation: spin 1.6s linear infinite; filter: blur(0.4px); }
-  .court-floor-dark .flying-ball { opacity: 0.18; }
   .court-floor-dark .bg-court { opacity: 0.08; }
   .logo-play { position: relative; aspect-ratio: 778 / 135; }
   .logo-play > img { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -122,9 +118,6 @@
 @keyframes rally { from { left: 12%; top: 30%; } 50% { top: 62%; } to { left: 84%; top: 38%; } }
 @keyframes shuffle { from { transform: translateY(-18%); } to { transform: translateY(18%); } }
 @keyframes flash { from { background-color: rgb(251 191 36 / 0.6); } to { background-color: transparent; } }
-@keyframes fly-x { from { transform: translateX(calc(100% + 60px)); } to { transform: translateX(-60px); } }
-@keyframes fly-y { 0%, 100% { transform: translateY(140px); } 50% { transform: translateY(0); } }
-@keyframes spin { to { transform: rotate(-360deg); } }
 @keyframes ball-x { from { left: 27.2%; } to { left: 41.6%; } }
 @keyframes ball-y { from { top: 38.5%; } to { top: -32%; } }
 @keyframes ball-spin { to { rotate: 360deg; } }
@@ -135,7 +128,6 @@
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { @apply translate-y-0 opacity-100 transition-none; }
-  .court.is-play .player, .court.is-play .ball, .live-dot::after, .feed-item, .flying-ball, .flying-ball span, .flying-ball img { animation: none; }
-  .flying-ball { display: none; }
+  .court.is-play .player, .court.is-play .ball, .live-dot::after, .feed-item { animation: none; }
   .paddle-left, .paddle-right, .logo-ball-x, .logo-ball { animation: none; }
 }
