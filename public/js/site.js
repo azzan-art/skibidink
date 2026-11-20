@@ -30,3 +30,35 @@ if (topbar && darkBands.length) {
   }, { rootMargin: '0px 0px -92% 0px' })
   darkBands.forEach(el => watch.observe(el))
 }
+
+if (topbar) {
+  let queued = false
+  const tint = () => {
+    queued = false
+    const depth = Math.min(scrollY / (innerHeight * 1.5), 1)
+    topbar.style.setProperty('--tint', (depth * 0.72).toFixed(3))
+  }
+  addEventListener('scroll', () => {
+    if (!queued) {
+      queued = true
+      requestAnimationFrame(tint)
+    }
+  }, { passive: true })
+  tint()
+}
+
+const links = [...document.querySelectorAll('.topbar-links a[href^="#"]')]
+const spied = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean)
+if (spied.length) {
+  const spy = new IntersectionObserver(entries => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue
+      links.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#' + e.target.id))
+    }
+  }, { rootMargin: '-45% 0px -54% 0px' })
+  spied.forEach(el => spy.observe(el))
+  const clear = new IntersectionObserver(entries => {
+    if (entries.some(e => e.isIntersecting)) links.forEach(a => a.classList.remove('is-active'))
+  }, { rootMargin: '-45% 0px -54% 0px' })
+  document.querySelectorAll('main > section:not([id]), #book, #join').forEach(el => clear.observe(el))
+}

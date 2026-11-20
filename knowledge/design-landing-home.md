@@ -103,6 +103,15 @@ The bar is a three-column grid (`1fr auto 1fr`), so the links are centred on the
 widths of the logo and the button. Over a section marked `data-dark` (the `book` band) the links turn
 light (`.on-dark`, set by an IntersectionObserver watching the top 8 % of the viewport).
 
+- **Depth wash.** `site.js` sets `--tint` on the bar from 0 at the top of the page to 0.72 after
+  1.5 viewport heights (once per animation frame on scroll). The blur layer's background is white at
+  that alpha, under the same top-to-bottom mask, so the bar gains a white wash the deeper the page is
+  read. Over a `data-dark` band the wash is navy instead, so it never lays a white haze on the dark
+  section.
+- **Scroll-spy.** The link whose section (`#the-place`, `#rules`, `#faqs`) crosses the middle band of
+  the viewport gets `.is-active`: bold, with an underline that grows from the centre (blue, lime over
+  the dark band). On the hero and the sections with no link (`#book`, `#join`) no link is active.
+
 ## Topbar on the hero
 
 The topbar logo and its Book button (`.nav-reveal`) are hidden while the hero's logo (`#hero-logo`)
