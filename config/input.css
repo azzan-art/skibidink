@@ -165,18 +165,17 @@
   .field { @apply w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none transition focus:border-dink focus:ring-2 focus:ring-dink/15; }
   .book-form label:not(.pay-choice) { @apply grid gap-1 text-xs font-semibold text-muted; }
   .pay-choice { @apply flex cursor-pointer items-start gap-2 rounded-lg border border-line p-3 text-sm text-body transition has-[:checked]:border-skibi has-[:checked]:bg-skibi/5; }
-  .admin-tab { @apply rounded-lg px-3 py-2 text-muted transition hover:text-ink; }
+  .admin-tab { @apply rounded-lg px-3 py-2 whitespace-nowrap text-muted transition hover:text-ink max-sm:flex-1 max-sm:text-center; }
   .admin-tab[aria-selected="true"] { @apply bg-dink/10 text-dink; }
   .admin-label { @apply grid gap-1 text-xs font-semibold text-muted; }
   .chip { @apply rounded-full border border-line bg-white px-3 py-1.5 font-semibold text-muted transition hover:border-slate-400; }
   .chip[aria-pressed="true"] { @apply border-ink bg-ink text-white; }
-  .status { @apply rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide; }
-  .status-requested { @apply bg-amber-100 text-amber-800; }
-  .status-awaiting { @apply bg-sky-100 text-sky-800; }
+  .status { @apply rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap uppercase tracking-wide; }
+  .status-requested, .status-awaiting { @apply bg-amber-100 text-amber-800; }
   .status-confirmed { @apply bg-skibi/15 text-skibi-dark; }
   .status-taken { @apply bg-rose-100 text-rose-700; }
   .status-declined, .status-cancelled { @apply bg-slate-100 text-muted; }
-  .act { @apply rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-slate-400 disabled:opacity-40; }
+  .act { @apply rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-slate-400 disabled:opacity-40 max-sm:flex-auto; }
   .act-go { @apply border-skibi bg-skibi text-white hover:bg-skibi-dark; }
   .act-pay { @apply border-dink bg-dink text-white hover:bg-dink-dark; }
   .act-block { @apply border-red-200 text-red-700 hover:bg-red-50; }

@@ -12,8 +12,12 @@ theirs. Several people may request the same hours; the first to pay wins.
 | status | Meaning | Blocks the slot? |
 | --- | --- | --- |
 | `requested` | Sent from `/book` with "Arrange with us", or reopened by the owner | no |
-| `awaiting` | Payment is arranged; `pay_by` is the deadline. Online-pay requests start here with 60 minutes | no |
-| `confirmed` | Paid (or the owner chose "Confirm, pay at court") | **yes** |
+| `awaiting` | An online-pay request, with 60 minutes in `pay_by` | no |
+| `confirmed` | Paid: the owner pressed "Paid: confirm", the PayMongo webhook arrived, or a walk-in | **yes** |
+
+Every request is waiting for payment, so the pages show `requested` and `awaiting` alike as
+"Awaiting payment", and the owner's only actions on one are "Paid: confirm" and "Decline".
+`awaiting` stays a separate value in the table only for the online-pay deadline.
 | `declined` / `cancelled` | Closed by the owner | no |
 
 - **Only `confirmed` blocks.** The public board, the calendar, the posters and the
@@ -109,8 +113,7 @@ every 5 minutes) on top of the global rate limit, and keeps the sender's address
 - **Requests**: every request in date and hour order, grouped by day, each with the account's
   email when it has one, a "Blocked" tag and a Block/Unblock button for accounts, filter chips (All,
   the default; Needs action, which is every requested or awaiting-payment one; Confirmed; Declined)
-  counted on the client, search, the walk-in form, and the actions each status allows. "Awaiting payment" sets a
-  24-hour pay-by; there is no action to move it later.
+  counted on the client, search, the walk-in form, and the actions each status allows.
 - **Calendar**: day, week and month views of confirmed bookings, a day in the month or week opens
   its day view, and "Download picture" fetches the poster for the view on screen.
 - **Dashboard**: "Players so far" sums `players` of confirmed bookings up to today, the people who

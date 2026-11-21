@@ -1,13 +1,13 @@
 <body class="admin bg-paper text-body">
 <header class="sticky top-0 z-40 border-b border-line bg-white/90 backdrop-blur">
-  <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-5">
-    <a href="/" aria-label="SkibiDink home"><img src="/img/logo.png" alt="SkibiDink" width="1218" height="230" class="h-7 w-auto"></a>
-    <nav id="tabs" class="ml-auto hidden gap-1 text-sm font-semibold sm:ml-6 sm:mr-auto" role="tablist">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 px-5 sm:h-16 sm:flex-nowrap">
+    <a href="/" aria-label="SkibiDink home" class="shrink-0 py-4 sm:py-0"><img src="/img/logo.png" alt="SkibiDink" width="1218" height="230" class="h-7 w-auto"></a>
+    <nav id="tabs" class="order-last -mx-1 hidden w-full gap-1 pb-2 text-sm font-semibold sm:order-none sm:mx-0 sm:ml-6 sm:mr-auto sm:w-auto sm:pb-0" role="tablist">
       <button type="button" class="admin-tab" data-tab="requests" role="tab">Requests <span id="tab-count" class="ml-1 hidden rounded-full bg-amber-400 px-1.5 text-[11px] text-ink"></span></button>
       <button type="button" class="admin-tab" data-tab="calendar" role="tab">Calendar</button>
       <button type="button" class="admin-tab" data-tab="dashboard" role="tab">Dashboard</button>
     </nav>
-    <button id="logout" type="button" class="hidden text-sm text-muted hover:text-ink">Sign out</button>
+    <button id="logout" type="button" class="ml-auto hidden shrink-0 text-sm text-muted hover:text-ink">Sign out</button>
   </div>
 </header>
 
@@ -27,26 +27,26 @@
       <h1 class="mr-auto text-3xl font-extrabold">Requests</h1>
       <button id="walkin-open" type="button" class="btn-primary px-4! py-2.5! text-sm">+ Walk-in booking</button>
     </div>
-    <form id="walkin" class="mt-5 hidden gap-3 rounded-2xl border border-line bg-white p-5 sm:grid-cols-4">
-      <label class="admin-label sm:col-span-2">Name<input name="name" required class="field"></label>
-      <label class="admin-label">Phone<input name="phone" inputmode="tel" maxlength="30" placeholder="0917 123 4567" class="field"></label>
-      <label class="admin-label">Facebook<input name="facebook" class="field"></label>
+    <form id="walkin" class="mt-5 hidden grid-cols-2 gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-4 sm:p-5">
+      <label class="admin-label col-span-2">Name<input name="name" required class="field"></label>
+      <label class="admin-label col-span-2 sm:col-span-1">Phone<input name="phone" inputmode="tel" maxlength="30" placeholder="0917 123 4567" class="field"></label>
+      <label class="admin-label col-span-2 sm:col-span-1">Facebook<input name="facebook" class="field"></label>
       <label class="admin-label">Day<input name="date" type="date" required class="field"></label>
       <label class="admin-label">Start<select name="hour" class="field" data-hours></select></label>
       <label class="admin-label">Hours<input name="hours" type="number" min="1" max="17" value="1" required class="field"></label>
       <label class="admin-label">Players<input name="players" type="number" min="1" max="16" value="4" required class="field"></label>
-      <label class="admin-label sm:col-span-3">Note<input name="note" class="field"></label>
-      <label class="flex items-center gap-2 self-end pb-3 text-sm font-semibold"><input name="paid" type="checkbox" class="size-4 accent-skibi"> Paid already</label>
-      <div class="flex items-center gap-3 sm:col-span-4">
+      <label class="admin-label col-span-2 sm:col-span-3">Note<input name="note" class="field"></label>
+      <label class="col-span-2 flex items-center gap-2 self-end pb-3 text-sm font-semibold sm:col-span-1"><input name="paid" type="checkbox" class="size-4 accent-skibi"> Paid already</label>
+      <div class="col-span-2 flex flex-wrap items-center gap-3 sm:col-span-4">
         <button type="submit" class="btn bg-skibi px-5! py-2.5! text-sm text-white hover:bg-skibi-dark">Save as confirmed</button>
         <button id="walkin-close" type="button" class="text-sm text-muted hover:text-ink">Cancel</button>
         <p id="walkin-error" class="text-sm text-red-600" role="alert"></p>
       </div>
     </form>
-    <div class="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">
-      <input id="search" type="search" placeholder="Search name, phone, Facebook, date or #id" class="field lg:w-96" aria-label="Search">
-      <div id="filters" class="flex flex-wrap gap-2 text-sm"></div>
-      <select id="scope" class="field lg:ml-auto lg:w-40" aria-label="Which dates">
+    <div class="mt-6 grid gap-3 sm:grid-cols-[1fr_11rem] lg:flex lg:items-center">
+      <input id="search" type="search" placeholder="Search name, phone, Facebook, date or #id" class="field lg:w-80" aria-label="Search">
+      <div id="filters" class="-mx-5 flex gap-2 overflow-x-auto px-5 text-sm whitespace-nowrap sm:col-span-2 sm:row-start-2 lg:mx-0 lg:px-0"></div>
+      <select id="scope" class="field sm:col-start-2 sm:row-start-1 lg:ml-auto lg:w-40" aria-label="Which dates">
         <option value="upcoming">Upcoming</option>
         <option value="past">Past</option>
         <option value="all">All dates</option>
@@ -76,7 +76,7 @@
 
   <section id="panel-dashboard" class="admin-panel hidden">
     <h1 class="text-3xl font-extrabold">Dashboard</h1>
-    <div id="tiles" class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4"></div>
+    <div id="tiles" class="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4"></div>
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
       <figure class="chart-card lg:col-span-2"><figcaption class="chart-title">Players per month</figcaption><div id="chart-months" class="chart"></div></figure>
       <figure class="chart-card"><figcaption class="chart-title">Busiest hours</figcaption><div id="chart-hours" class="chart"></div></figure>

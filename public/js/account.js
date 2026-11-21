@@ -2,8 +2,9 @@
   const $ = id => document.getElementById(id)
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
   const fmtHour = h => `${h % 12 || 12} ${h < 12 || h === 24 ? 'AM' : 'PM'}`
-  const longDate = iso => new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
-  const STATUS = { requested: 'Requested', awaiting: 'Awaiting payment', confirmed: 'Confirmed', declined: 'Declined', cancelled: 'Cancelled' }
+  const thisYear = String(new Date().getFullYear())
+  const longDate = iso => new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric', year: iso.startsWith(thisYear) ? undefined : 'numeric', timeZone: 'UTC' })
+  const STATUS = { requested: 'Awaiting payment', awaiting: 'Awaiting payment', confirmed: 'Confirmed', declined: 'Declined', cancelled: 'Cancelled' }
   const q = new URLSearchParams(location.search)
   const next = (() => {
     const n = q.get('next') || ''
@@ -88,14 +89,15 @@
     const asc = (a, b) => a.day.localeCompare(b.day) || a.start_hour - b.start_hour
     const row = r => {
       const taken = r.taken_at && open(r)
+      const at = 'justify-self-end max-sm:col-start-2 max-sm:row-start-1'
       const pill = taken
-        ? '<span class="status status-taken ml-auto" title="Someone else booked and paid for these hours first">Taken</span>'
-        : `<span class="status status-${esc(r.status)} ml-auto">${STATUS[r.status] || esc(r.status)}</span>`
-      return `<li class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border ${taken ? 'border-rose-200 bg-rose-50/50' : 'border-line'} px-3 py-2">
-        <span class="font-semibold text-ink">${longDate(r.day)}</span>
-        <span class="text-muted">${fmtHour(r.start_hour)}–${fmtHour(r.start_hour + r.hours)} · ${r.players} players</span>
+        ? `<span class="status status-taken ${at}" title="Someone else booked and paid for these hours first">Taken</span>`
+        : `<span class="status status-${esc(r.status)} ${at}">${STATUS[r.status] || esc(r.status)}</span>`
+      return `<li class="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-0.5 rounded-xl border ${taken ? 'border-rose-200 bg-rose-50/50' : 'border-line'} px-3 py-2.5 sm:grid-cols-[auto_1fr_auto]">
+        <span class="font-semibold whitespace-nowrap text-ink">${longDate(r.day)}</span>
+        <span class="text-muted max-sm:col-span-2 max-sm:row-start-2">${fmtHour(r.start_hour)}–${fmtHour(r.start_hour + r.hours)} · ${r.players} players</span>
         ${pill}
-        ${taken ? `<span class="basis-full text-xs text-rose-700">Someone else paid for these hours first. <a href="${sitePath('/book')}" class="font-semibold underline">Pick another time</a></span>` : ''}
+        ${taken ? `<span class="col-span-2 text-xs text-rose-700 sm:col-span-3">Someone else paid for these hours first. <a href="${sitePath('/book')}" class="font-semibold underline">Pick another time</a></span>` : ''}
       </li>`
     }
     const fill = (id, rows, empty) => { $(id).innerHTML = rows.length ? rows.map(row).join('') : `<li class="text-muted">${empty}</li>` }

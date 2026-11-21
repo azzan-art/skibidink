@@ -11,7 +11,7 @@
   const monthName = iso => dateOf(iso).toLocaleDateString('en-PH', { month: 'long', year: 'numeric', timeZone: 'UTC' })
   const mondayOf = iso => addDays(iso, -((dateOf(iso).getUTCDay() + 6) % 7))
   const when = ts => ts ? new Date(ts).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' }) : ''
-  const STATUS_LABEL = { requested: 'Requested', awaiting: 'Awaiting payment', confirmed: 'Confirmed', declined: 'Declined', cancelled: 'Cancelled' }
+  const STATUS_LABEL = { requested: 'Awaiting payment', awaiting: 'Awaiting payment', confirmed: 'Confirmed', declined: 'Declined', cancelled: 'Cancelled' }
   const PAY_LABEL = { online: 'Pays online', arrange: 'Pay arranged with us', walkin: 'Walk-in' }
 
   const state = { me: null, tab: 'requests', filter: 'all', items: [], cal: { view: 'month', date: null } }
@@ -98,21 +98,20 @@
       const url = /^https?:\/\//i.test(r.facebook) ? r.facebook : /facebook\.com|fb\.com|m\.me/i.test(r.facebook) ? `https://${r.facebook}` : null
       out.push(url ? `<a class="font-semibold text-dink hover:underline" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Facebook</a>` : `<span>FB: ${esc(r.facebook)}</span>`)
     }
-    return out.join('<span class="text-line">|</span>')
+    return out.join('<span class="text-line max-sm:hidden">|</span>')
   }
 
   function actions(r) {
     const b = (label, cls, act) => `<button type="button" class="act ${cls}" data-id="${r.id}" data-act="${act}">${label}</button>`
-    const block = !r.user_id ? '' : `<button type="button" class="act ml-auto ${r.banned_at ? '' : 'act-block'}" data-user="${r.user_id}" data-act="${r.banned_at ? 'unban' : 'ban'}">${r.banned_at ? 'Unblock account' : 'Block account'}</button>`
+    const block = !r.user_id ? '' : `<button type="button" class="act ml-auto max-sm:basis-full ${r.banned_at ? '' : 'act-block'}" data-user="${r.user_id}" data-act="${r.banned_at ? 'unban' : 'ban'}">${r.banned_at ? 'Unblock account' : 'Block account'}</button>`
     return statusActions(r, b) + block
   }
 
   function statusActions(r, b) {
     switch (r.status) {
       case 'requested':
-        return b('Awaiting payment', '', 'awaiting') + b('Paid: confirm', 'act-go', 'confirm-paid') + b('Confirm, pay at court', '', 'confirm') + b('Decline', '', 'declined')
       case 'awaiting':
-        return b('Paid: confirm', 'act-go', 'confirm-paid') + b('Confirm, pay at court', '', 'confirm') + b('Decline', '', 'declined')
+        return b('Paid: confirm', 'act-go', 'confirm-paid') + b('Decline', '', 'declined')
       case 'confirmed':
         return (r.paid_at ? b('Mark unpaid', '', 'unpaid') : b('Mark paid', 'act-pay', 'paid')) + b('Cancel booking', '', 'cancelled')
       default:
@@ -142,15 +141,15 @@
       `Sent ${when(r.created_at)}`,
     ].filter(Boolean).join(' · ')
     return `<article class="rounded-2xl border ${overdue ? 'border-red-300' : 'border-line'} bg-white p-4 sm:p-5">
-      <div class="flex flex-wrap items-start gap-x-4 gap-y-2">
-        <div class="min-w-28"><p class="font-display text-xl font-bold text-ink">${span(r)}</p><p class="text-xs text-muted">#${r.id}</p></div>
-        <div class="mr-auto min-w-0">
+      <div class="grid grid-cols-[1fr_auto] items-start gap-x-4 gap-y-2 sm:grid-cols-[8.5rem_1fr_auto]">
+        <div><p class="font-display text-lg font-bold text-ink sm:text-xl">${span(r)}</p><p class="text-xs text-muted">#${r.id}</p></div>
+        <div class="min-w-0 max-sm:col-span-2 max-sm:row-start-2">
           <p class="font-bold text-ink">${esc(r.name)}${r.banned_at ? `<span class="ml-2 rounded bg-red-100 px-1.5 py-0.5 align-middle text-[11px] font-bold uppercase text-red-700" title="${esc(r.ban_reason || 'Blocked')}">Blocked</span>` : ''}</p>
-          <p class="mt-0.5 flex flex-wrap gap-2 text-sm">${contactLinks(r)}${r.email ? `<span class="text-line">|</span><a class="text-muted hover:underline" href="mailto:${esc(r.email)}">${esc(r.email)}</a>` : ''}</p>
+          <p class="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-sm">${contactLinks(r)}${r.email ? `<span class="text-line max-sm:hidden">|</span><a class="min-w-0 break-all text-muted hover:underline" href="mailto:${esc(r.email)}">${esc(r.email)}</a>` : ''}</p>
           <p class="mt-1 text-xs text-muted">${meta}</p>
           ${r.note ? `<p class="mt-2 text-sm text-body">“${esc(r.note)}”</p>` : ''}
         </div>
-        <span class="status status-${r.status}">${STATUS_LABEL[r.status]}</span>
+        <span class="status status-${r.status} justify-self-end max-sm:col-start-2 max-sm:row-start-1">${STATUS_LABEL[r.status]}</span>
       </div>
       ${warn}
       <div class="mt-4 flex flex-wrap gap-2">${actions(r)}</div>
@@ -182,9 +181,7 @@
 
   async function act(id, what) {
     const body = {
-      awaiting: { status: 'awaiting', payByHours: 24 },
       'confirm-paid': { status: 'confirmed', paid: true },
-      confirm: { status: 'confirmed' },
       declined: { status: 'declined' },
       cancelled: { status: 'cancelled' },
       requested: { status: 'requested' },
@@ -195,7 +192,7 @@
     try {
       const res = await api(`/api/admin/reservations/${id}`, body)
       const taken = res.taken ? ` Emailed ${res.taken === 1 ? 'the 1 player' : `the ${res.taken} players`} whose request it took.` : ''
-      toast({ awaiting: 'Waiting for payment, 24 hours to pay.', 'confirm-paid': 'Confirmed and paid.', confirm: 'Confirmed.', declined: 'Declined.', cancelled: 'Booking cancelled.', requested: 'Reopened.', paid: 'Marked paid.', unpaid: 'Marked unpaid.' }[what] + taken)
+      toast({ 'confirm-paid': 'Confirmed and paid.', declined: 'Declined.', cancelled: 'Booking cancelled.', requested: 'Reopened.', paid: 'Marked paid.', unpaid: 'Marked unpaid.' }[what] + taken)
     } catch (e) {
       toast(e.message)
     }
@@ -245,9 +242,9 @@
       const full = used >= totalHours()
       const inMonth = d.slice(0, 7) === month
       const pct = Math.round(used / totalHours() * 100)
-      cells += `<button type="button" data-day="${d}" class="flex min-h-24 flex-col rounded-xl border p-2 text-left transition hover:border-dink/50 ${full ? 'border-dink bg-dink text-white' : 'border-line bg-white'} ${inMonth ? '' : 'opacity-40'} ${d === state.me.today ? 'ring-2 ring-skibi' : ''}">
-        <span class="font-display text-lg font-bold">${+d.slice(8)}</span>
-        ${full ? '<span class="mt-auto text-[11px] font-bold uppercase tracking-wide">Full</span>' : rows.length ? `<span class="mt-auto text-[11px] font-semibold text-muted">${rows.length} booking${rows.length === 1 ? '' : 's'} · ${used} h</span><span class="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100"><span class="block h-full rounded-full bg-dink" style="width:${pct}%"></span></span>` : ''}
+      cells += `<button type="button" data-day="${d}" class="flex min-h-16 min-w-0 flex-col overflow-hidden rounded-lg border p-1.5 text-left sm:min-h-24 sm:rounded-xl sm:p-2 transition hover:border-dink/50 ${full ? 'border-dink bg-dink text-white' : 'border-line bg-white'} ${inMonth ? '' : 'opacity-40'} ${d === state.me.today ? 'ring-2 ring-skibi' : ''}">
+        <span class="font-display text-sm font-bold sm:text-lg">${+d.slice(8)}</span>
+        ${full ? '<span class="mt-auto text-[10px] font-bold uppercase tracking-wide sm:text-[11px]">Full</span>' : rows.length ? `<span class="mt-auto truncate text-[10px] font-semibold text-muted sm:text-[11px]"><span class="hidden md:block md:truncate">${rows.length} booking${rows.length === 1 ? '' : 's'}</span>${used} h</span><span class="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100"><span class="block h-full rounded-full bg-dink" style="width:${pct}%"></span></span>` : ''}
       </button>`
     }
     return `<div class="grid grid-cols-7 gap-1.5 sm:gap-2">${head}${cells}</div>`
@@ -323,7 +320,7 @@
       tile('Players so far', s.playersPlayed, 'People on court from confirmed bookings up to today'),
       tile('Customers', s.customers, `${s.returning} came back more than once`),
       tile('Confirmed bookings', s.confirmed, `${s.hours} court hours · ${s.upcoming} still ahead`),
-      tile('Needs action', s.requested + s.awaiting, `${s.requested} requested · ${s.awaiting} awaiting payment`),
+      tile('Needs action', s.requested + s.awaiting, 'Requests awaiting payment'),
       tile('All requests', s.requests, s.requests ? `${Math.round(s.confirmed / s.requests * 100)}% became bookings` : ''),
       tile('Players booked', s.players, 'Including bookings still ahead'),
       tile('Paid online', s.online, ''),
