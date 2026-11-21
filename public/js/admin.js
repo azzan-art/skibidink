@@ -14,7 +14,7 @@
   const STATUS_LABEL = { requested: 'Requested', awaiting: 'Awaiting payment', confirmed: 'Confirmed', declined: 'Declined', cancelled: 'Cancelled' }
   const PAY_LABEL = { online: 'Pays online', arrange: 'Pay arranged with us', walkin: 'Walk-in' }
 
-  const state = { me: null, tab: 'requests', filter: 'open', items: [], cal: { view: 'month', date: null } }
+  const state = { me: null, tab: 'requests', filter: 'all', items: [], cal: { view: 'month', date: null } }
 
   let toastTimer
   function toast(text) {
@@ -73,12 +73,10 @@
   // Requests
 
   const FILTERS = [
+    ['all', 'All', () => true],
     ['open', 'Needs action', r => r.status === 'requested' || r.status === 'awaiting'],
-    ['requested', 'Requested', r => r.status === 'requested'],
-    ['awaiting', 'Awaiting payment', r => r.status === 'awaiting'],
     ['confirmed', 'Confirmed', r => r.status === 'confirmed'],
     ['closed', 'Declined', r => r.status === 'declined' || r.status === 'cancelled'],
-    ['all', 'All', () => true],
   ]
 
   let searchTimer
@@ -114,7 +112,7 @@
       case 'requested':
         return b('Awaiting payment', '', 'awaiting') + b('Paid: confirm', 'act-go', 'confirm-paid') + b('Confirm, pay at court', '', 'confirm') + b('Decline', '', 'declined')
       case 'awaiting':
-        return b('Paid: confirm', 'act-go', 'confirm-paid') + b('Confirm, pay at court', '', 'confirm') + b('Extend 24 h', '', 'extend') + b('Decline', '', 'declined')
+        return b('Paid: confirm', 'act-go', 'confirm-paid') + b('Confirm, pay at court', '', 'confirm') + b('Decline', '', 'declined')
       case 'confirmed':
         return (r.paid_at ? b('Mark unpaid', '', 'unpaid') : b('Mark paid', 'act-pay', 'paid')) + b('Cancel booking', '', 'cancelled')
       default:
@@ -185,7 +183,6 @@
   async function act(id, what) {
     const body = {
       awaiting: { status: 'awaiting', payByHours: 24 },
-      extend: { status: 'awaiting', payByHours: 24 },
       'confirm-paid': { status: 'confirmed', paid: true },
       confirm: { status: 'confirmed' },
       declined: { status: 'declined' },
@@ -198,7 +195,7 @@
     try {
       const res = await api(`/api/admin/reservations/${id}`, body)
       const taken = res.taken ? ` Emailed ${res.taken === 1 ? 'the 1 player' : `the ${res.taken} players`} whose request it took.` : ''
-      toast({ awaiting: 'Waiting for payment, 24 hours to pay.', extend: 'Pay-by moved 24 hours later.', 'confirm-paid': 'Confirmed and paid.', confirm: 'Confirmed.', declined: 'Declined.', cancelled: 'Booking cancelled.', requested: 'Reopened.', paid: 'Marked paid.', unpaid: 'Marked unpaid.' }[what] + taken)
+      toast({ awaiting: 'Waiting for payment, 24 hours to pay.', 'confirm-paid': 'Confirmed and paid.', confirm: 'Confirmed.', declined: 'Declined.', cancelled: 'Booking cancelled.', requested: 'Reopened.', paid: 'Marked paid.', unpaid: 'Marked unpaid.' }[what] + taken)
     } catch (e) {
       toast(e.message)
     }

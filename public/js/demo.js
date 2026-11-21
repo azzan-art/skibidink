@@ -283,8 +283,8 @@
       const s = (q.get('q') || '').trim().toLowerCase()
       let rows = db.rows.filter(r => scope === 'all' || (scope === 'upcoming' ? r.day >= today : r.day < today))
       if (s) rows = rows.filter(r => [r.name, r.phone, r.facebook, r.note, r.day].some(v => v.toLowerCase().includes(s)) || `#${r.id}` === s || String(r.id) === s)
-      rows.sort(scope === 'past' ? (a, b) => b.day.localeCompare(a.day) || a.start_hour - b.start_hour : sortRows)
-      return ok({ items: rows.slice(0, 500).map(adminRow) })
+      if (scope === 'past') rows = rows.sort((a, b) => sortRows(b, a)).slice(0, 500)
+      return ok({ items: rows.sort(sortRows).slice(0, 500).map(adminRow) })
     },
     'POST /api/admin/reservations': (_, b) => {
       if (!db.session.admin) return fail(401, '')

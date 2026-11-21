@@ -155,7 +155,7 @@ async fn list(State(app): State<Arc<App>>, headers: HeaderMap, Query(q): Query<B
     let search = q.get("q").map(|s| s.trim().replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_")).unwrap_or_default();
     let (today, _) = manila_now();
     let sql = format!(
-        "SELECT coalesce(json_agg(x), '[]')::text FROM (
+        "SELECT coalesce(json_agg(x ORDER BY x.day, x.start_hour, x.created_at), '[]')::text FROM (
            SELECT {ROW},
              (SELECT coalesce(json_agg(json_build_object('id', o.id, 'name', o.name, 'phone', o.phone, 'facebook', o.facebook,
                        'status', o.status, 'start_hour', o.start_hour, 'hours', o.hours) ORDER BY o.created_at), '[]')

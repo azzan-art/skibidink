@@ -94,7 +94,7 @@ every 5 minutes) on top of the global rate limit, and keeps the sender's address
 | `POST /api/reservations` | anyone | A request for `slots`; answers `id` (the bundle) and `ids` (one per block), and with `pay: "online"` also opens a checkout and answers `checkoutUrl` |
 | `POST /api/pay/paymongo` | PayMongo | The payment webhook (`integ-paymongo.md`) |
 | `GET /admin` | anyone | The admin page; everything on it needs a session (`auth-admin.md`) |
-| `GET /api/admin/reservations?scope&q` | admin | The list: `upcoming` (default), `past` (newest first) or `all`; `q` searches name, phone, Facebook, note, date and `#id`; at most 500 rows |
+| `GET /api/admin/reservations?scope&q` | admin | The list: `upcoming` (default), `past` or `all`, always in date and hour order; `q` searches name, phone, Facebook, note, date and `#id`; at most 500 rows (`past` keeps the 500 most recent) |
 | `POST /api/admin/reservations` | admin | A walk-in: saved straight to `confirmed` through `confirm`, deleted again if the hours are taken |
 | `POST /api/admin/reservations/{id}` | admin | `{status, payByHours, paid}`: change status, set the pay-by deadline, mark paid or unpaid; a confirm answers `taken` |
 | `POST /api/admin/users/{id}/ban` | admin | `{ban, reason}`: block or unblock an account (`auth-account.md` § Blocked accounts) |
@@ -106,10 +106,11 @@ every 5 minutes) on top of the global rate limit, and keeps the sender's address
 
 `public/admin.html` + `public/js/admin.js`, three tabs:
 
-- **Requests**: grouped by day in date order, each with the account's email when it has one, a
-  "Blocked" tag and a Block/Unblock button for accounts, filter chips (Needs action, Requested, Awaiting
-  payment, Confirmed, Declined, All) counted on the client, search, the walk-in form, and the
-  actions each status allows.
+- **Requests**: every request in date and hour order, grouped by day, each with the account's
+  email when it has one, a "Blocked" tag and a Block/Unblock button for accounts, filter chips (All,
+  the default; Needs action, which is every requested or awaiting-payment one; Confirmed; Declined)
+  counted on the client, search, the walk-in form, and the actions each status allows. "Awaiting payment" sets a
+  24-hour pay-by; there is no action to move it later.
 - **Calendar**: day, week and month views of confirmed bookings, a day in the month or week opens
   its day view, and "Download picture" fetches the poster for the view on screen.
 - **Dashboard**: "Players so far" sums `players` of confirmed bookings up to today, the people who
