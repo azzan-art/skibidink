@@ -302,7 +302,7 @@
     const max = Math.max(1, ...data.map(d => d.v))
     $(el).innerHTML = data.map(d => `<div class="bar-col" tabindex="0" aria-label="${esc(label(d))}: ${d.v} ${unit}">
       <span class="bar-tip">${esc(label(d))}: ${d.v} ${unit}</span>
-      <span class="bar" style="height:${d.v / max * 100}%"></span>
+      <span class="bar-track"><span class="bar" style="height:${d.v / max * 100}%"></span></span>
       <span class="bar-label">${esc(d.short ?? label(d))}</span>
     </div>`).join('')
   }
@@ -327,7 +327,7 @@
       tile('Walk-ins', s.walkIns, 'Booked at the court'),
     ].join('')
     bars('chart-months', s.months.map(m => ({ v: m.players, short: dateOf(`${m.month}-01`).toLocaleDateString('en-PH', { month: 'short', timeZone: 'UTC' }), m })), d => monthName(`${d.m.month}-01`), 'players')
-    bars('chart-hours', s.byHour.map((v, i) => ({ v, h: open + i, short: (open + i) % 3 === 0 ? fmtHour(open + i).replace(' ', '') : '' })), d => `${fmtHour(d.h)}–${fmtHour(d.h + 1)}`, 'bookings')
+    bars('chart-hours', s.byHour.map((v, i) => ({ v, h: open + i, short: fmtHour(open + i).replace(' ', '') })), d => `${fmtHour(d.h)}–${fmtHour(d.h + 1)}`, 'bookings')
     bars('chart-days', s.byWeekday.map((v, i) => ({ v, d: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][i] })).map(x => ({ ...x, short: x.d.slice(0, 3) })), d => d.d, 'bookings')
   }
 

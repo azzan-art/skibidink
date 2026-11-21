@@ -184,12 +184,14 @@
   .chart-card { @apply rounded-2xl border border-line bg-white p-5; }
   .chart-title { @apply text-sm font-bold text-ink; }
   .chart { @apply mt-4 flex h-48 items-end gap-1; }
-  .bar-col { @apply relative flex h-full flex-1 flex-col items-center justify-end gap-1.5 outline-none; }
+  .bar-col { @apply relative flex h-full min-w-0 flex-1 flex-col items-center gap-1.5 outline-none; }
+  .bar-track { @apply flex w-full min-h-0 flex-1 items-end justify-center; }
   .bar { @apply w-full max-w-10 rounded-t bg-dink transition-colors; min-height: 2px; }
   .bar-col:hover .bar, .bar-col:focus-visible .bar { @apply bg-dink-dark; }
   .bar-tip { @apply pointer-events-none absolute -top-1 z-10 -translate-y-full whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[11px] font-semibold text-white opacity-0 transition-opacity; }
   .bar-col:hover .bar-tip, .bar-col:focus-visible .bar-tip { @apply opacity-100; }
-  .bar-label { @apply text-[10px] text-muted; }
+  .bar-label { @apply min-h-[1.25em] text-[9.5px] leading-tight whitespace-nowrap text-muted; }
+  #chart-hours .bar-label { @apply max-sm:h-7 max-sm:[writing-mode:vertical-rl] max-sm:rotate-180; }
 }
 
 
