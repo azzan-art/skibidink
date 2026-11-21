@@ -41,6 +41,13 @@ for path in $(grep -o '<loc>[^<]*' "$ROOT/public/sitemap.xml" | sed 's|<loc>http
   echo "page $path"
 done
 
+# Not in the sitemap (noindex), built so the in-browser demo (public/js/demo.js) can reach them.
+for path in /account /admin; do
+  mkdir -p "$OUT$path"
+  curl -sf "http://127.0.0.1:$PORT$path" -o "$OUT$path/index.html"
+  echo "page $path"
+done
+
 if [ -n "$BASE" ]; then
   find "$OUT" -name '*.html' -exec perl -pi -e 's{((?:href|src)=")/(?!/)}{$1'"$BASE"'/}g' {} +
   find "$OUT" -name '*.css' -exec perl -pi -e 's{url\(([\x27"]?)/(?!/)}{url($1'"$BASE"'/}g' {} +

@@ -3,40 +3,67 @@ use std::sync::Arc;
 use axum::{
     Router,
     extract::{Request, State},
-    http::{Method, header},
+    http::{HeaderMap, Method, header},
     response::Response,
     routing::get,
 };
 use serde_json::json;
 
 use crate::{
-    App,
+    App, account,
     pages::Meta,
     public,
     web::{self, Head, Res},
 };
 
 pub fn routes() -> Router<Arc<App>> {
-    Router::new().route("/", get(home)).route("/api/ready", get(ready)).route("/api/health", get(health))
+    Router::new().route("/", get(home)).route("/book", get(book)).route("/api/ready", get(ready)).route("/api/health", get(health))
 }
 
-async fn send_page(app: &App, file: &str, meta: Meta) -> Res {
+/// Signed out while accounts exist. Without a database (GitHub Pages, a local run with no
+/// `DATABASE_URL`) nobody can sign in, so nobody is a guest and the pages stay as written.
+async fn is_guest(app: &App, headers: &HeaderMap) -> bool {
+    app.db.is_some() && account::current(app, headers).await.map_or(true, |user| user.is_none())
+}
+
+/// A guest's Book links go to sign-in instead: `href="/book" data-guest-href="X"` becomes
+/// `href="X"`, and `<span data-guest="X">…</span>` becomes `<span>X</span>`.
+fn for_guest(html: &str) -> String {
+    static HREF: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
+    static LABEL: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
+    let href = HREF.get_or_init(|| regex::Regex::new(r#"href="[^"]*" data-guest-href="([^"]*)""#).unwrap());
+    let label = LABEL.get_or_init(|| regex::Regex::new(r#"<span data-guest="([^"]*)">[^<]*</span>"#).unwrap());
+    label.replace_all(&href.replace_all(html, r#"href="$1""#), "<span>$1</span>").into_owned()
+}
+
+async fn send_page(app: &App, file: &str, meta: Meta, guest: bool) -> Res {
     let path = app.root.join("public").join(file);
     let html = app
         .pages
-        .cached(&format!("{file}|{}", meta.path), || async {
+        .cached(&format!("{file}|{}|{}", meta.path, if guest { "guest" } else { "member" }), || async {
             let body = tokio::fs::read_to_string(&path).await.map_err(|e| format!("{}: {e}", path.display()))?;
-            Ok(app.pages.compose(&meta, &body))
+            let page = app.pages.compose(&meta, &body);
+            Ok(if guest { for_guest(&page) } else { page })
         })
         .await?;
     Ok(web::html(200, html.as_str().to_owned()).head("Cache-Control", "private, no-cache"))
 }
 
-async fn home(State(app): State<Arc<App>>) -> Res {
+async fn home(State(app): State<Arc<App>>, headers: HeaderMap) -> Res {
     let meta = Meta::new("/")
         .title("SkibiDink | Pickleball")
         .description("SkibiDink is a place to play pickleball, booked by the hour.");
-    send_page(&app, "index.html", meta).await
+    send_page(&app, "index.html", meta, is_guest(&app, &headers).await).await
+}
+
+async fn book(State(app): State<Arc<App>>, headers: HeaderMap) -> Res {
+    if is_guest(&app, &headers).await {
+        return Ok(web::redirect(302, "/account?next=%2Fbook"));
+    }
+    let meta = Meta::new("/book")
+        .title("Book a court | SkibiDink")
+        .description("See which hours are open at SkibiDink and send a booking request.");
+    send_page(&app, "book.html", meta, false).await
 }
 
 async fn ready() -> Response {
@@ -70,5 +97,16 @@ pub async fn fallback(State(app): State<Arc<App>>, req: Request) -> Response {
         web::redirect(302, "/")
     } else {
         web::text(404, "Not Found")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn guests_get_sign_in_links() {
+        let html = r#"<a href="/book" data-guest-href="/account?next=%2Fbook" class="b"><span data-guest="Sign in to book">Book now</span></a>"#;
+        assert_eq!(for_guest(html), r#"<a href="/account?next=%2Fbook" class="b"><span>Sign in to book</span></a>"#);
     }
 }

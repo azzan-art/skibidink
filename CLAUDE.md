@@ -20,8 +20,9 @@ live yet" until it does.
 
 ## Placeholders
 
-Location, contact and booking are placeholders. Never invent an address, phone number, price or
-opening hours; the owner supplies them.
+Phone, email, Facebook and the map pin are the owner's (`knowledge/design-landing-home.md`). The
+street address, prices, opening hours and photos are still placeholders. Never invent them; the
+owner supplies them.
 
 ## Keep the local server running
 

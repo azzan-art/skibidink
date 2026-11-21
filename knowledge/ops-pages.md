@@ -25,7 +25,8 @@ pages once at build time and the files are published; nothing runs per request.
 4. With `BASE_PATH` set, rewrites every root-relative `href="/…"` and `src="/…"` in the HTML and
    every `url(/…)` in the CSS to start with it. **A new root-relative reference in another form
    (a path built in JavaScript, `srcset`, an inline style) is not rewritten** and 404s under the
-   project path.
+   project path. JavaScript builds its paths with `sitePath('/…')` (`site.js`), which prefixes
+   `window.SITE_BASE`; `demo.js` sets it from its own rewritten `src`, and it is empty elsewhere.
 5. Points `robots.txt` and `sitemap.xml` at `SITE_URL`, and writes `.nojekyll` so Pages serves
    every file as-is.
 
@@ -34,10 +35,12 @@ bin/static`, then serve the parent of a folder named `skibidink` that holds `dis
 
 ## Consequences of static hosting
 
-- **Only sitemap pages exist.** A page not listed in `public/sitemap.xml` is never built.
-- **No API.** `/api/*` routes, the database and anything per-visitor do not exist on Pages. The
-  court board works because it runs entirely in the browser (`design-landing-home.md` § Court
-  board). Real bookings need the Rust server hosted (`render.yaml`) and the board pointed at it.
+- **Only sitemap pages exist,** plus `/account` and `/admin`, which `bin/static` fetches by name
+  (they are `noindex` and stay out of the sitemap).
+- **No API.** `/api/*`, the database and payment do not exist on Pages. The build runs the server
+  with no database, so every page loads `/js/demo.js`, which answers `/api/*` in the browser with
+  made-up data (`arch-demo.md`). Real requests, payment and the admin need the Rust server hosted
+  (`render.yaml`) with a database.
 - Pages sends its own caching headers (about 10 minutes); `?v=<commit>` is what makes a new deploy
   reach returning visitors.
 - The repository is public, which Pages on a free plan requires.

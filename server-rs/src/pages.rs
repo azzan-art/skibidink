@@ -76,6 +76,7 @@ pub fn strip_comments(html: &str) -> String {
 pub struct Pages {
     pub version: String,
     production: bool,
+    demo: bool,
     pub assets: Option<crate::public::Tree>,
     versioned_re: Regex,
     cache: Mutex<HashMap<String, Arc<String>>>,
@@ -87,13 +88,16 @@ fn jsonld(v: &Value) -> String {
 }
 
 impl Pages {
-    pub fn new(root: &Path) -> Self {
+    /// `demo`: no database outside production (the GitHub Pages build), so pages load `/js/demo.js`,
+    /// which answers `/api/*` in the browser.
+    pub fn new(root: &Path, demo: bool) -> Self {
         let version = std::env::var("RENDER_GIT_COMMIT").ok().filter(|v| !v.is_empty()).unwrap_or_else(|| {
             std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis().to_string()).unwrap_or_default()
         });
         Self {
             version,
             production: web::production(),
+            demo,
             assets: web::production().then(|| crate::public::tree(&root.join("public"))),
             versioned_re: Regex::new(r#"((?:href|src))="(/[^"?]+\.(?:js|css|png|jpe?g|webp|avif|gif|svg|ico|woff2?|ttf))""#).expect("valid regex"),
             cache: Mutex::new(HashMap::new()),
@@ -125,7 +129,11 @@ impl Pages {
             "url": format!("{base}/"),
             "logo": logo,
             "image": logo,
-            "sport": "Pickleball"
+            "sport": "Pickleball",
+            "telephone": "+63 998 227 4603",
+            "email": "skibidinkofficial@gmail.com",
+            "sameAs": ["https://www.facebook.com/profile.php?id=61596374805137"],
+            "hasMap": "https://maps.app.goo.gl/mUGWVuJdh1voBKHB6"
         });
         let site = json!({
             "@type": "WebSite",
@@ -147,6 +155,7 @@ impl Pages {
         });
         let structured = format!("{{\"@context\":\"https://schema.org\",\"@graph\":[{},{},{}]}}", jsonld(&org), jsonld(&site), jsonld(&page));
         let (title, description, robots) = (escape(&meta.title), escape(&meta.description), &meta.robots);
+        let demo = if self.demo { "<script src=\"/js/demo.js\"></script>\n" } else { "" };
         format!(
             r##"<!DOCTYPE html>
 <html lang="en">
@@ -172,7 +181,7 @@ impl Pages {
 <link rel="preload" href="/vendor/fonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/vendor/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/styles/output.css">
-<script defer src="/js/site.js"></script>
+{demo}<script defer src="/js/site.js"></script>
 <script defer src="/js/book.js"></script>
 </head>
 "##
@@ -217,7 +226,7 @@ mod tests {
 
     #[test]
     fn versions_local_assets_only() {
-        let p = Pages::new(Path::new("."));
+        let p = Pages::new(Path::new("."), false);
         let out = p.versioned(r#"<link href="/styles/output.css"><script src="https://cdn.example/x.js"></script>"#);
         assert!(out.contains(&format!("/styles/output.css?v={}", p.version)));
         assert!(out.contains("https://cdn.example/x.js\""));

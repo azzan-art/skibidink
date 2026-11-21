@@ -105,14 +105,12 @@ pub fn env_number(name: &str, default: f64) -> f64 {
 const BUCKET_MAX_IPS: usize = 5_000;
 
 /// A token bucket per client address: `burst` to start, refilled at `per_min`.
-#[allow(dead_code)]
 pub struct Buckets {
     burst: f64,
     per_ms: f64,
     map: Mutex<IndexMap<String, (f64, Instant)>>,
 }
 
-#[allow(dead_code)]
 impl Buckets {
     pub fn new(burst: f64, per_min: f64) -> Self {
         Self { burst, per_ms: per_min / 60_000.0, map: Mutex::new(IndexMap::new()) }

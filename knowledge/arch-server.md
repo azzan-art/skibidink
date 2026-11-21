@@ -7,7 +7,10 @@ what lets the site run on a free or small instance.
 
 ```
 Cloudflare (router/) → skibidink :$PORT ─┬─ middleware (web.rs)   edge check, cross-site guard, rate limit
-                                          ├─ site routes (site.rs) /, /api/ready, /api/health
+                                          ├─ site routes (site.rs) /, /book, /api/ready, /api/health
+                                          ├─ booking (book.rs, admin.rs, pay.rs) /api/availability, /api/reservations,
+                                          │                         /admin, /api/admin/*, /api/pay/paymongo
+                                          ├─ accounts (account.rs)  /account, /api/account/*
                                           └─ fallback             /_v/<hash>/…, public/ files, else 302 /
 ```
 
@@ -15,18 +18,34 @@ Cloudflare (router/) → skibidink :$PORT ─┬─ middleware (web.rs)   edge c
 
 | File | Holds |
 | --- | --- |
-| `main.rs` | `App`, the `.env` loader, the schema, the router, the sweeper, shutdown |
+| `main.rs` | `App`, the `.env` loader, the router, the sweeper, shutdown |
 | `web.rs` | `Ctx`, the middleware, the limiter, token buckets, `Fail`, response helpers, ETags |
 | `pages.rs` | `Meta`, the shared `<head>`, structured data, `versioned()`, `compose()`, the page cache |
 | `public.rs` | Files under `public/`: lookup, content types, the asset tree hash |
 | `site.rs` | Page routes, health, the fallback |
-| `db.rs` | The Postgres pool (`deadpool-postgres`, TLS without certificate checks) |
+| `book.rs` | Reservations: the schema, validation, `confirm`, the public routes (`arch-booking.md`) |
+| `admin.rs` | Admin sign-in and every `/api/admin` route (`auth-admin.md`, `arch-booking.md`) |
+| `pay.rs` | PayMongo checkout and webhook (`integ-paymongo.md`) |
+| `account.rs` | Customer accounts: register, verify, sign in, reset, profile (`auth-account.md`) |
+| `mail.rs` | The one way to send an email, provider chosen by env (`integ-mail.md`) |
+| `poster.rs` | Schedule pictures as PNG (`design-booking-posters.md`) |
+| `date.rs` | Calendar days without a date crate, Manila now, hour labels |
+| `db.rs` | The Postgres pool (`deadpool-postgres`, TLS without certificate checks), the app's own schema |
 
 ## Boot
 
 1. `.env` under `SKIBIDINK_ROOT` (default `.`) is read for a local run. **A variable already set
    always wins**, and the image ships no `.env`, so production reads only the platform's variables.
-2. Postgres connects when `DATABASE_URL` is set and `SCHEMA` runs. Every statement there must be
+2. Postgres connects when `DATABASE_URL` is set and `book::SCHEMA` then `account::SCHEMA` run
+   (the second alters `reservations`, so the order matters). The batch runs as one transaction: one
+   failing statement rolls back all of it.
+
+**Every connection works inside its own schema**, `DB_SCHEMA` (default `skibidink`): the pool's
+`post_create` hook runs `CREATE SCHEMA IF NOT EXISTS` and `SET search_path` on each new connection.
+The database is shared with other apps and already holds unrelated tables such as a `users` with
+different columns; without the schema `CREATE TABLE IF NOT EXISTS users` silently keeps the
+foreign table and every query against it fails. The session pooler (port 5432) keeps the
+`search_path` for the connection's life; a transaction pooler (port 6543) would not. Every statement there must be
    `CREATE … IF NOT EXISTS`, because it runs on every boot. A missing database never stops the boot:
    pages serve, and routes that call `App::db()` answer 500.
 3. The port binds; `/api/ready` answers from then on.
@@ -56,8 +75,9 @@ After the handler: HSTS in production (no `includeSubDomains`, no `preload`), `n
 `strict-origin-when-cross-origin`, `SAMEORIGIN`, and every `/api` answer without its own
 `Cache-Control` gets `no-store` and `noindex`.
 
-`web::Buckets` is a per-address token bucket for routes that need their own limit (a booking
-form). It starts full and refills continuously.
+`web::Buckets` is a per-address token bucket for routes that need their own limit
+(`request_buckets` for booking requests, `login_buckets` for admin sign-in, `account_buckets` for
+customer sign-in and registration). It starts full and refills continuously.
 
 ## Errors
 
@@ -82,8 +102,9 @@ JSON-LD), versions every asset, and strips HTML comments outside `<script>`, `<s
 Each route builds its own `Meta`, so every page has its own title and canonical. One shared set
 would canonicalise every page to the homepage.
 
-The structured data states only true, on-site facts. **No address, phone or opening hours until
-they are real**: fabricated local-business data risks a Google manual action.
+The structured data states only true, on-site facts: the owner's phone, email, Facebook
+(`sameAs`) and map pin (`hasMap`) are in it. **No street address or opening hours until the owner
+confirms them**: fabricated local-business data risks a Google manual action.
 
 `SITE_URL` (default `https://skibidink.com`) is the canonical origin. It must match the domain the
 site is served on, `public/robots.txt` and `public/sitemap.xml`.

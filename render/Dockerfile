@@ -2,6 +2,7 @@ FROM rust:1-slim-bookworm AS server
 WORKDIR /src
 COPY server-rs/Cargo.toml server-rs/Cargo.lock ./
 COPY server-rs/src ./src
+COPY server-rs/fonts ./fonts
 RUN cargo build --release --locked
 
 FROM debian:bookworm-slim AS css

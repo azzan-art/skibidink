@@ -1,0 +1,123 @@
+<body>
+<header id="nav" class="topbar fixed inset-x-0 top-0 z-50">
+  <div class="relative mx-auto grid h-18 max-w-6xl grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center px-5">
+    <a href="/" class="nav-reveal justify-self-start" aria-label="SkibiDink home">
+      <span class="logo-play inline-block h-7 shrink-0 align-middle sm:h-8" role="img" aria-label="SkibiDink"><img src="/img/logo-base.png" alt="" width="1218" height="230"><img src="/img/logo-trail.png" alt="" width="1218" height="230" class="logo-trail"><img src="/img/logo-paddle-left.png" alt="" width="1218" height="230" class="paddle-left"><img src="/img/logo-paddle-right.png" alt="" width="1218" height="230" class="paddle-right"><span class="logo-ball-x"><img src="/img/logo-ball.png" alt="" width="60" height="60" class="logo-ball"></span></span>
+    </a>
+    <nav class="topbar-links hidden items-center justify-center gap-8 text-[15px] font-medium md:flex">
+      <a href="/#the-place">The place</a>
+      <a href="/#rules">House rules</a>
+      <a href="/#faqs">FAQs</a>
+    </nav>
+  </div>
+</header>
+
+<main class="relative min-h-svh bg-mist px-5 pb-24 pt-32">
+  <div class="mx-auto max-w-md">
+    <p id="acct-flash" class="mb-4 hidden rounded-xl px-4 py-3 text-sm font-semibold" role="status"></p>
+
+    <section id="view-auth" class="hidden rounded-3xl border border-line bg-white p-6 shadow-xl shadow-slate-900/10">
+      <div class="grid grid-cols-2 rounded-lg bg-slate-100 p-1 text-sm font-semibold" role="tablist">
+        <button type="button" class="auth-tab rounded-md py-2" data-auth="login" role="tab">Sign in</button>
+        <button type="button" class="auth-tab rounded-md py-2" data-auth="register" role="tab">Create account</button>
+      </div>
+
+      <form id="form-login" class="book-form mt-6 grid gap-3">
+        <label>Email<input name="email" type="email" required autocomplete="email" class="field"></label>
+        <label>Password<input name="password" type="password" required autocomplete="current-password" class="field"></label>
+        <button type="submit" class="btn-primary mt-1">Sign in</button>
+        <button type="button" id="to-forgot" class="justify-self-center text-sm text-muted hover:text-ink">Forgot password?</button>
+      </form>
+
+      <form id="form-register" class="book-form mt-6 hidden gap-3">
+        <label>Name<input name="name" required maxlength="80" autocomplete="name" class="field"></label>
+        <label>Email<input name="email" type="email" required autocomplete="email" class="field"></label>
+        <label>Password<input name="password" type="password" required minlength="8" autocomplete="new-password" class="field"></label>
+        <label>Phone<input name="phone" required inputmode="tel" maxlength="30" autocomplete="tel" placeholder="0917 123 4567" class="field"></label>
+        <label>Facebook name or link (optional)<input name="facebook" maxlength="200" class="field"></label>
+        <p class="text-[11px] text-muted">We use your phone or Facebook only to arrange payment for your bookings.</p>
+        <button type="submit" class="btn bg-skibi text-white hover:bg-skibi-dark disabled:opacity-50">Create account</button>
+      </form>
+
+      <form id="form-forgot" class="book-form mt-6 hidden gap-3">
+        <p class="text-sm text-muted">We'll email you a link to choose a new password.</p>
+        <label>Email<input name="email" type="email" required autocomplete="email" class="field"></label>
+        <button type="submit" class="btn-primary">Send reset link</button>
+        <button type="button" class="back-login justify-self-center text-sm text-muted hover:text-ink">Back to sign in</button>
+      </form>
+
+      <p id="auth-error" class="mt-3 min-h-5 text-sm text-red-600" role="alert"></p>
+      <button type="button" id="resend" class="hidden text-sm font-semibold text-dink hover:underline">Send the confirmation email again</button>
+    </section>
+
+    <section id="view-reset" class="hidden rounded-3xl border border-line bg-white p-6 shadow-xl shadow-slate-900/10">
+      <h1 class="text-2xl font-extrabold">Choose a new password</h1>
+      <form id="form-reset" class="book-form mt-5 grid gap-3">
+        <label>New password<input name="password" type="password" required minlength="8" autocomplete="new-password" class="field"></label>
+        <button type="submit" class="btn-primary">Save password</button>
+      </form>
+      <p id="reset-error" class="mt-3 min-h-5 text-sm text-red-600" role="alert"></p>
+    </section>
+
+    <section id="view-sent" class="hidden rounded-3xl border border-line bg-white p-6 text-center shadow-xl shadow-slate-900/10">
+      <h1 class="text-2xl font-extrabold">Check your email</h1>
+      <p id="sent-text" class="mt-2 text-sm text-muted"></p>
+      <button type="button" class="back-login btn-ghost mt-5">Back to sign in</button>
+    </section>
+
+    <section id="view-me" class="hidden">
+      <div class="flex items-center gap-3">
+        <h1 class="mr-auto text-3xl font-extrabold">Hi, <span id="me-name"></span></h1>
+        <button id="signout" type="button" class="text-sm text-muted hover:text-ink">Sign out</button>
+      </div>
+      <div id="me-banned" class="mt-5 hidden rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+        <p class="font-bold">Your account is blocked from booking.</p>
+        <p id="me-banned-reason" class="mt-1"></p>
+        <p class="mt-1 text-xs text-red-700"><a href="https://www.facebook.com/profile.php?id=61596374805137" target="_blank" rel="noopener" class="font-semibold underline">Message us</a> if you think this is a mistake.</p>
+      </div>
+      <a id="me-book" href="/book" class="btn-primary mt-5 w-full">Book a court</a>
+      <div class="mt-6 grid gap-6">
+        <div class="rounded-3xl border border-line bg-white p-6">
+          <h2 class="text-lg font-bold">Booked</h2>
+          <p class="text-xs text-muted">Paid and confirmed. These hours are yours.</p>
+          <ul id="my-booked" class="mt-3 grid gap-2 text-sm"></ul>
+        </div>
+        <div class="rounded-3xl border border-line bg-white p-6">
+          <h2 class="text-lg font-bold">Requests</h2>
+          <p class="text-xs text-muted">Waiting on payment. The first to pay gets the hours.</p>
+          <ul id="my-requests" class="mt-3 grid gap-2 text-sm"></ul>
+        </div>
+        <details class="rounded-3xl border border-line bg-white p-6">
+          <summary class="cursor-pointer text-lg font-bold">Past and closed</summary>
+          <ul id="my-past" class="mt-3 grid gap-2 text-sm"></ul>
+        </details>
+      </div>
+      <form id="form-profile" class="book-form mt-6 grid gap-3 rounded-3xl border border-line bg-white p-6">
+        <h2 class="text-lg font-bold">Account settings</h2>
+        <p class="text-xs text-muted">Signed in as <span id="me-email" class="font-semibold text-ink"></span></p>
+        <label>Name<input name="name" required maxlength="80" class="field"></label>
+        <label>Phone<input name="phone" required inputmode="tel" maxlength="30" autocomplete="tel" placeholder="0917 123 4567" class="field"></label>
+        <label>Facebook name or link (optional)<input name="facebook" maxlength="200" class="field"></label>
+        <button type="submit" class="btn-ghost">Save details</button>
+        <p id="profile-msg" class="min-h-5 text-sm" role="status"></p>
+      </form>
+    </section>
+  </div>
+</main>
+<script defer src="/js/account.js"></script>
+<footer class="net-footer">
+  <div class="relative mx-auto max-w-6xl px-5 pb-14 pt-20">
+    <span class="logo-play block h-7" role="img" aria-label="SkibiDink"><img src="/img/logo-base.png" alt="" width="1218" height="230"><img src="/img/logo-trail.png" alt="" width="1218" height="230" class="logo-trail"><img src="/img/logo-paddle-left.png" alt="" width="1218" height="230" class="paddle-left"><img src="/img/logo-paddle-right.png" alt="" width="1218" height="230" class="paddle-right"><span class="logo-ball-x"><img src="/img/logo-ball.png" alt="" width="60" height="60" class="logo-ball"></span></span>
+    <p class="mt-5 max-w-sm text-sm leading-relaxed text-muted">Pickleball you can book by the hour.</p>
+    <ul class="foot-contact">
+      <li><span class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.1 9.9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><div><p class="foot-label">Phone</p><a class="foot-value block hover:underline" href="tel:+639982274603">+63 998 227 4603</a></div></li>
+      <li><span class="icon-box"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V2.14A28 28 0 0 0 14.64 2C11.93 2 10 3.66 10 6.7v2.8H7v4h3V22h4v-8.5z"/></svg></span><div><p class="foot-label">Facebook</p><a class="foot-value block hover:underline" href="https://www.facebook.com/profile.php?id=61596374805137" target="_blank" rel="noopener">SkibiDink on Facebook</a></div></li>
+      <li><span class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span><div><p class="foot-label">Email</p><a class="foot-value block hover:underline" href="mailto:skibidinkofficial@gmail.com">skibidinkofficial@gmail.com</a></div></li>
+    </ul>
+    <div class="mt-10 flex flex-col gap-2 border-t border-line pt-6 text-xs text-muted sm:flex-row sm:justify-between">
+      <p>&copy; <span id="year">2026</span> SkibiDink. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -3,18 +3,22 @@
   if (!floor) return
 
   const OPEN = 6
-  const CLOSE = 22
+  const CLOSE = 23
   const DAYS = 7
   const HOUR = 3600e3
-  const HELD_KEY = 'skibidink.held'
+  const SENT_KEY = 'skibidink.requested'
   const POS = [{ left: 14, top: 20, width: 72, height: 47.6 }]
   const COURTS = POS.length
   const courtName = c => COURTS === 1 ? 'The court' : `Court ${c + 1}`
   const PLAYERS = [[16, 28], [24, 64], [72, 30], [80, 62]]
 
   const $ = id => document.getElementById(id)
-  const state = { court: 0, day: 0, hour: null, seen: new Set() }
-  let held = new Set(JSON.parse(localStorage.getItem(HELD_KEY) || '[]'))
+  const MAX_PICKS = 8
+  const state = { court: 0, day: 0, picks: new Set() }
+  const sent = new Set(JSON.parse(localStorage.getItem(SENT_KEY) || '[]'))
+  let live = null
+  let user = null
+  const toAccount = () => { location.href = sitePath('/account?next=' + encodeURIComponent('/book')) }
 
   const manila = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -62,12 +66,24 @@
   }
 
   const isBooked = (t, date, court, hour) => {
+    if (live) return (live.booked[date] || []).includes(hour)
     const at = bookedAt(date, court, hour)
     return at !== null && at <= t.ms
   }
 
+  async function loadLive() {
+    try {
+      const res = await fetch('/api/availability?days=' + DAYS, { cache: 'no-store' })
+      if (!res.ok) return false
+      live = await res.json()
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const fmtHour = h => `${h % 12 || 12} ${h < 12 ? 'AM' : 'PM'}`
-  const dayName = (date, i) => i === 0 ? 'Today' : i === 1 ? 'Tomorrow'
+  const dayName = (date, i) => i === 0 ? 'Today'
     : new Date(`${date}T12:00:00+08:00`).toLocaleDateString('en-PH', { weekday: 'short', timeZone: 'Asia/Manila' })
   const dayNum = date => +date.slice(8)
   const longDate = date => new Date(`${date}T12:00:00+08:00`).toLocaleDateString('en-PH', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'Asia/Manila' })
@@ -103,7 +119,7 @@
         ${COURTS > 1 ? `<span class="court-name">${courtName(i)}</span>` : ""}`
       b.addEventListener('click', () => {
         state.court = i
-        state.hour = null
+        state.picks.clear()
         render()
       })
       floor.appendChild(b)
@@ -132,117 +148,209 @@
     $('clock').textContent = `${t.hour % 12 || 12}:${String(t.minute).padStart(2, '0')} ${t.hour < 12 ? 'AM' : 'PM'}`
   }
 
+  const pickKey = (date, hour) => `${date}|${hour}`
+  const sentKey = (date, hour) => `${date}|${state.court}|${hour}`
+
+  function freeHours(t, i) {
+    const date = addDays(t.date, i)
+    const hours = []
+    for (let h = OPEN; h < CLOSE; h++) if (!(i === 0 && h <= t.hour) && !isBooked(t, date, state.court, h)) hours.push(h)
+    return hours
+  }
+
+  function blocks() {
+    const out = []
+    for (const k of [...state.picks].sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))) {
+      const [date, h] = [k.slice(0, 10), +k.slice(11)]
+      const last = out[out.length - 1]
+      if (last && last.date === date && last.hour + last.hours === h) last.hours++
+      else out.push({ date, hour: h, hours: 1 })
+    }
+    return out
+  }
+
+  const byDate = bs => [...new Set(bs.map(b => b.date))].map(d => [d, bs.filter(b => b.date === d)])
+  const blockText = b => `${fmtHour(b.hour)}–${fmtHour(b.hour + b.hours)}`
+
+  function pruneDays(t, open) {
+    for (const k of state.picks) {
+      const i = Math.round((Date.parse(`${k.slice(0, 10)}T00:00:00+08:00`) - Date.parse(`${t.date}T00:00:00+08:00`)) / 864e5)
+      if (i < 0 || i >= DAYS || !open[i].includes(+k.slice(11))) state.picks.delete(k)
+    }
+    if (!open[state.day].length) {
+      const next = open.findIndex(h => h.length)
+      if (next >= 0) state.day = next
+    }
+  }
+
   function renderDays(t) {
+    const open = [...Array(DAYS)].map((_, i) => freeHours(t, i))
+    pruneDays(t, open)
     const box = $('days')
     box.innerHTML = ''
     for (let i = 0; i < DAYS; i++) {
       const date = addDays(t.date, i)
+      const full = !open[i].length
       const b = document.createElement('button')
       b.type = 'button'
       b.className = 'day'
+      b.disabled = full
       b.setAttribute('role', 'tab')
-      b.setAttribute('aria-selected', i === state.day)
-      b.innerHTML = `<span class="text-[11px] font-semibold uppercase">${dayName(date, i)}</span><span class="font-display text-lg font-bold">${dayNum(date)}</span>`
+      b.setAttribute('aria-selected', i === state.day && !full)
+      b.title = full ? (i === 0 && t.hour >= CLOSE - 1 ? 'No more hours today' : 'Fully booked') : ''
+      b.innerHTML = `<span class="text-[11px] font-semibold uppercase">${dayName(date, i)}</span><span class="font-display text-lg font-bold">${dayNum(date)}</span>${full ? '<span class="day-stamp">Full</span>' : ''}`
       b.addEventListener('click', () => {
         state.day = i
-        state.hour = null
         render()
       })
       box.appendChild(b)
     }
+    return open
   }
 
-  function renderSlots(t) {
+  function updateDaysHint() {
+    const box = $('days')
+    box.parentElement.classList.toggle('can-scroll', box.scrollLeft + box.clientWidth < box.scrollWidth - 4)
+  }
+  $('days').addEventListener('scroll', updateDaysHint, { passive: true })
+  addEventListener('resize', updateDaysHint)
+
+  function renderSlots(t, open) {
     const date = addDays(t.date, state.day)
     const box = $('slots')
     box.innerHTML = ''
-    if (state.day === 0 && state.hour !== null && state.hour <= t.hour) state.hour = null
     for (let h = OPEN; h < CLOSE; h++) {
       if (state.day === 0 && h <= t.hour) continue
       const b = document.createElement('button')
       b.type = 'button'
       b.className = 'slot'
       b.textContent = fmtHour(h)
-      const key = `${date}|${state.court}|${h}`
+      const key = pickKey(date, h)
+      const held = sent.has(sentKey(date, h))
       const booked = isBooked(t, date, state.court, h)
       if (booked) b.classList.add('is-booked')
-      if (state.seen.has(key)) b.classList.add('just-booked')
-      if (held.has(key) && !booked) b.classList.add('is-held')
+      if (held && !booked) b.classList.add('is-held')
       b.disabled = booked
-      b.setAttribute('aria-pressed', state.hour === h)
-      b.title = booked ? 'Booked' : held.has(key) ? 'Held by you' : 'Open'
+      b.setAttribute('aria-pressed', state.picks.has(key))
+      b.title = booked ? 'Booked' : held ? 'You sent a request for this hour' : 'Open'
       b.addEventListener('click', () => {
-        state.hour = h
+        if (state.picks.has(key)) state.picks.delete(key)
+        else if (state.picks.size >= MAX_PICKS) return toast(`Up to ${MAX_PICKS} hours in one request.`)
+        else state.picks.add(key)
         render()
       })
       box.appendChild(b)
     }
-    if (!box.children.length) box.innerHTML = `<p class="col-span-4 grid min-h-40 place-items-center rounded-lg bg-slate-100 text-center text-sm text-muted">No more hours today. Pick another day.</p>`
-    state.seen.clear()
+    if (!box.children.length) box.innerHTML = `<p class="col-span-4 grid min-h-[12.625rem] place-items-center rounded-lg bg-slate-100 text-center text-sm text-muted">No more hours this week. Check back soon.</p>`
 
     $('pick-court').textContent = courtName(state.court)
     const status = $('pick-status')
-    const free = [...Array(CLOSE - OPEN)].filter((_, k) => !(state.day === 0 && OPEN + k <= t.hour) && !isBooked(t, date, state.court, OPEN + k)).length
-    status.textContent = `${free} open`
+    const free = open[state.day].length
+    status.textContent = free ? `${free} open` : 'Full'
     status.className = `rounded-full px-2.5 py-1 text-xs font-bold ${free ? 'bg-skibi/10 text-skibi' : 'bg-slate-100 text-muted'}`
 
     const summary = $('summary')
     const hold = $('hold')
-    if (state.hour === null) {
-      summary.textContent = 'Pick an open hour to hold it.'
+    const n = state.picks.size
+    if (!n) {
+      summary.textContent = !live ? 'Pick open hours to hold them.' : user ? 'Pick one or more open hours to request them.' : 'Pick open hours, then sign in to request them.'
       summary.className = 'rounded-xl border border-dashed border-slate-300 p-4 text-sm text-muted'
       hold.disabled = true
-      hold.textContent = 'Hold this slot'
+      hold.textContent = live ? 'Request these hours' : 'Hold these hours'
       return
     }
-    const key = `${date}|${state.court}|${state.hour}`
-    summary.innerHTML = `<span class="block text-xs uppercase tracking-wider text-muted">Your pick</span>
-      <span class="mt-1 block font-display text-lg font-bold text-ink">${fmtHour(state.hour)}–${fmtHour(state.hour + 1)}</span>
-      <span class="text-muted">${longDate(date)}</span>`
+    const picked = blocks()
+    const byDay = byDate(picked)
+    summary.innerHTML = `<span class="block text-xs uppercase tracking-wider text-muted">Your pick · ${n} hour${n > 1 ? 's' : ''}</span>` +
+      byDay.map(([d, bs]) => `<span class="mt-1 block"><b class="font-display text-ink">${bs.map(blockText).join(', ')}</b> <span class="text-muted">${longDate(d)}</span></span>`).join('')
     summary.className = 'rounded-xl border border-skibi/40 bg-skibi/5 p-4 text-sm'
     hold.disabled = false
-    hold.textContent = held.has(key) ? 'Release this hold' : 'Hold this slot'
+    const label = `${n} hour${n > 1 ? 's' : ''}`
+    if (live && user?.banned) {
+      hold.disabled = true
+      hold.textContent = 'Your account is blocked from booking'
+      return
+    }
+    if (live) {
+      hold.textContent = !user ? 'Sign in to book' : `Request ${label}`
+      hold.onclick = () => user ? openForm() : toAccount()
+      return
+    }
+    const keys = [...state.picks].map(k => sentKey(k.slice(0, 10), +k.slice(11)))
+    const allHeld = keys.every(k => sent.has(k))
+    hold.textContent = allHeld ? `Release ${label}` : `Hold ${label}`
     hold.onclick = () => {
-      if (held.has(key)) held.delete(key)
-      else held.add(key)
-      localStorage.setItem(HELD_KEY, JSON.stringify([...held]))
-      toast(held.has(key) ? `Held ${fmtHour(state.hour)}, ${longDate(date)}. Confirmation opens soon.` : 'Hold released.')
+      keys.forEach(k => allHeld ? sent.delete(k) : sent.add(k))
+      localStorage.setItem(SENT_KEY, JSON.stringify([...sent]))
+      toast(allHeld ? 'Hold released.' : `Held ${label}. Confirmation opens soon.`)
+      state.picks.clear()
       render()
     }
   }
 
-  function recentBookings(t) {
-    const out = []
-    for (let i = 0; i < 3; i++) {
-      const date = addDays(t.date, i)
-      for (let c = 0; c < COURTS; c++) {
-        for (let h = OPEN; h < CLOSE; h++) {
-          const at = bookedAt(date, c, h)
-          if (at !== null && at <= t.ms && at > t.ms - 12 * HOUR && slotStart(date, h) > t.ms) out.push({ at, date, c, h, i })
+  const form = $('book-form')
+  const dialog = $('book-dialog')
+
+  function openForm() {
+    const picked = blocks()
+    const n = state.picks.size
+    $('book-when').innerHTML = byDate(picked)
+      .map(([d, bs]) => `<span class="block">${longDate(d)}: ${bs.map(blockText).join(', ')}</span>`).join('')
+    $('book-who').textContent = [user.name, user.phone].filter(Boolean).join(' · ')
+    $('pay-online').classList.toggle('hidden', !live.online)
+    $('pay-price').textContent = live.pricePerHour ? `₱${(live.pricePerHour * n).toLocaleString('en-PH')} for ${n} hour${n > 1 ? 's' : ''}. ` : ''
+    form.querySelector('[name=pay][value=arrange]').checked = true
+    $('book-error').textContent = ''
+    $('book-done').classList.add('hidden')
+    form.classList.remove('hidden')
+    dialog.showModal()
+  }
+
+  if (form) {
+    $('book-cancel').addEventListener('click', () => dialog.close())
+    $('book-close').addEventListener('click', () => dialog.close())
+    form.addEventListener('submit', async e => {
+      e.preventDefault()
+      const slots = [...state.picks].map(k => ({ date: k.slice(0, 10), hour: +k.slice(11) }))
+      const body = { ...Object.fromEntries(new FormData(form)), slots }
+      const button = form.querySelector('[type=submit]')
+      button.disabled = true
+      $('book-error').textContent = ''
+      try {
+        const res = await fetch('/api/reservations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        const data = await res.json().catch(() => ({}))
+        if (data.signIn) return toAccount()
+        if (data.banned) user.banned = true
+        if (!res.ok) throw new Error(data.error || 'Could not send. Try again.')
+        slots.forEach(p => sent.add(sentKey(p.date, p.hour)))
+        state.picks.clear()
+        localStorage.setItem(SENT_KEY, JSON.stringify([...sent]))
+        if (data.checkoutUrl) {
+          location.href = data.checkoutUrl
+          return
         }
+        form.classList.add('hidden')
+        $('book-done-text').textContent = data.payFailed
+          ? `Request #${data.id} is in, but online payment is down right now. We'll message you to arrange payment.`
+          : `Request #${data.id} is in. We'll message you to arrange payment. The slot is yours once it's paid.`
+        $('book-done').classList.remove('hidden')
+        render()
+      } catch (err) {
+        $('book-error').textContent = err.message
+        await loadLive()
+        render()
+      } finally {
+        button.disabled = false
       }
-    }
-    return out.sort((a, b) => b.at - a.at).slice(0, 5)
+    })
   }
 
-  function ago(ms) {
-    const m = Math.round(ms / 60e3)
-    return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.round(m / 60)} hr ago`
-  }
-
-  let lastTop = null
-  function renderFeed(t) {
-    const items = recentBookings(t)
-    const top = items[0] && `${items[0].date}|${items[0].c}|${items[0].h}`
-    if (lastTop !== null && top !== lastTop && items[0]) {
-      state.seen.add(top)
-      toast(`${COURTS === 1 ? '' : courtName(items[0].c) + ' at '}${fmtHour(items[0].h)} just got booked`)
-    }
-    lastTop = top ?? ''
-    $('feed').innerHTML = items.map(b => {
-      const when = b.i === 0 ? (b.h >= 17 ? 'tonight' : 'today') : b.i === 1 ? 'tomorrow' : dayName(b.date, b.i)
-      return `<li class="feed-item"><span class="size-1.5 rounded-full bg-amber-400"></span>${COURTS === 1 ? '' : courtName(b.c) + ' · '}${fmtHour(b.h)} ${when}<span class="text-slate-500">· booked ${ago(t.ms - b.at)}</span></li>`
-    }).join('')
+  function returnFromCheckout() {
+    const q = new URLSearchParams(location.search)
+    if (q.has('paid')) toast(`Payment received for request #${q.get('paid')}. Your booking is confirmed once it clears.`)
+    else if (q.has('unpaid')) toast(`Payment for request #${q.get('unpaid')} wasn't finished. We'll keep it as a request.`)
+    else return
+    history.replaceState(null, '', location.pathname)
   }
 
   let toastTimer
@@ -257,22 +365,29 @@
   function render() {
     const t = now()
     renderFloor(t)
-    renderDays(t)
-    renderSlots(t)
+    renderSlots(t, renderDays(t))
+    updateDaysHint()
   }
 
   let lastKey = ''
-  function tick() {
+  let ticks = 0
+  async function tick() {
+    if (live && ++ticks % 6 === 0) await loadLive()
     const t = now()
-    renderFeed(t)
-    const key = `${t.date}|${t.hour}|${lastTop}`
+    const key = `${t.date}|${t.hour}|${JSON.stringify(live?.booked ?? '')}`
     if (key !== lastKey) render()
     else renderFloor(t)
     lastKey = key
   }
 
   buildCourts()
-  renderFeed(now())
   render()
+  returnFromCheckout()
+  loadLive().then(async ok => {
+    if (!ok) return
+    user = await fetch('/api/account/me', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(d => d?.user ?? null).catch(() => null)
+    $('board-note').textContent = live.online ? 'Pay online and the slot is yours at once, or send a request and pay us directly.' : 'Send a request and we\'ll message you to arrange payment. The slot is yours once paid.'
+    render()
+  })
   setInterval(tick, 10e3)
 })()

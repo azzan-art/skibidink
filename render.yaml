@@ -21,5 +21,17 @@ services:
         sync: false
       - key: SITE_URL
         sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: PRICE_PER_HOUR
+        sync: false
+      - key: PAYMONGO_SECRET_KEY
+        sync: false
+      - key: PAYMONGO_WEBHOOK_SECRET
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
       - key: MALLOC_ARENA_MAX
         value: "2"

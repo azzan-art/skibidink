@@ -1,5 +1,12 @@
+mod account;
+mod admin;
+mod book;
+mod date;
 mod db;
+mod mail;
 mod pages;
+mod pay;
+mod poster;
 mod public;
 mod site;
 mod web;
@@ -17,10 +24,15 @@ pub struct App {
     pub db: Option<Db>,
     pub pages: pages::Pages,
     pub limiter: web::Limiter,
+    pub request_buckets: web::Buckets,
+    pub login_buckets: web::Buckets,
+    pub account_buckets: web::Buckets,
+    pub sessions: admin::Sessions,
+    pub mailer: mail::Mailer,
+    pub http: reqwest::Client,
 }
 
 impl App {
-    #[allow(dead_code)]
     pub fn db(&self) -> Result<&Db, Fail> {
         self.db.as_ref().ok_or_else(|| Fail("DATABASE_URL is not set.".into()))
     }
@@ -44,8 +56,6 @@ fn load_env_file(path: &std::path::Path) {
         }
     }
 }
-
-const SCHEMA: &str = "SELECT 1;";
 
 async fn shutdown_signal() {
     let term = async {
@@ -80,26 +90,58 @@ async fn main() {
         }
     });
     match &db {
-        Some(db) => match db.batch(SCHEMA).await {
-            Ok(()) => println!("[db] schema ready"),
+        Some(db) => match db.batch(&format!("{}{}", book::SCHEMA, account::SCHEMA)).await {
+            Ok(()) => {
+                println!("[db] schema ready");
+                if let Err(err) = account::seed_demo(db).await {
+                    eprintln!("[demo] {err}");
+                }
+            }
             Err(err) => eprintln!("\n[db] SCHEMA FAILED: {err}\n"),
         },
         None => println!("[db] DATABASE_URL unset: pages work, database routes answer 500"),
     }
 
-    let app = Arc::new(App { pages: pages::Pages::new(&root), root, db, limiter: web::Limiter::new() });
+    let app = Arc::new(App {
+        pages: pages::Pages::new(&root, db.is_none() && !web::production()),
+        root,
+        db,
+        limiter: web::Limiter::new(),
+        request_buckets: web::Buckets::new(5.0, 0.2),
+        login_buckets: web::Buckets::new(5.0, 2.0),
+        account_buckets: web::Buckets::new(10.0, 5.0),
+        sessions: admin::Sessions::new(),
+        mailer: mail::Mailer::from_env(),
+        http: reqwest::Client::builder().timeout(Duration::from_secs(20)).build().expect("http client"),
+    });
 
+    let app_mailer_name = app.mailer.name();
     let sweeper = app.clone();
     tokio::spawn(async move {
         let mut tick = tokio::time::interval(Duration::from_secs(60));
+        let mut n: u64 = 0;
         loop {
             tick.tick().await;
+            n += 1;
+            if n % 60 == 0
+                && let Some(db) = &sweeper.db
+                && let Err(err) = account::sweep(db).await
+            {
+                eprintln!("[sweep] {err}");
+            }
             sweeper.limiter.sweep();
+            sweeper.account_buckets.sweep();
+            sweeper.request_buckets.sweep();
+            sweeper.login_buckets.sweep();
         }
     });
 
     let router = Router::new()
         .merge(site::routes())
+        .merge(book::routes())
+        .merge(admin::routes())
+        .merge(account::routes())
+        .merge(pay::routes())
         .fallback(site::fallback)
         .with_state(app.clone())
         .layer(axum::middleware::from_fn(web::etag))
@@ -108,6 +150,7 @@ async fn main() {
     // the path routing sees.
     let service = axum::middleware::from_fn_with_state(app, web::middleware).layer(router);
 
+    println!("[mail] sending through {}", app_mailer_name);
     let port = std::env::var("PORT").ok().and_then(|v| v.parse().ok()).unwrap_or(3000u16);
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(addr).await.expect("bind PORT");
